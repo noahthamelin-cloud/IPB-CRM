@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A7D8C">
+<title>IPB Pipeline</title>
+<style>
+:root{
+  --bg:#E9EFF0; --surface:#FFFFFF; --surface2:#F5F8F8;
+  --ink:#0F252D; --ink2:#3D5A63; --muted:#7A939B; --line:#D3DEE0;
+  --teal:#0A7D8C; --teal-d:#075965; --teal-l:#E0EFF1;
+  --sun:#E8930C; --sun-l:#FDF0DA;
+  --ok:#1B8A56; --ok-l:#E1F2E9;
+  --alert:#C13D28; --alert-l:#FBE7E3;
+  --wa:#1FA855;
+  --r:10px;
+  --safe:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px; line-height:1.45; -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(68px + var(--safe));
+}
+button,input,select,textarea{font-family:inherit;font-size:16px;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:var(--teal)}
+h1,h2,h3{margin:0;font-weight:650;letter-spacing:-.015em}
+:focus-visible{outline:2.5px solid var(--sun);outline-offset:2px;border-radius:4px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- shell ---------- */
+.top{
+  position:sticky;top:0;z-index:40;background:var(--teal-d);color:#fff;
+  padding:12px 16px 11px;display:flex;align-items:center;gap:10px;
+}
+.top .mark{width:22px;height:22px;flex:none}
+.top h1{font-size:16px;flex:1;letter-spacing:-.02em}
+.top .who{
+  font-size:12px;background:rgba(255,255,255,.16);padding:4px 9px;border-radius:999px;
+  font-weight:600;
+}
+.wrap{max-width:720px;margin:0 auto;padding:14px 12px 24px}
+
+.nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);
+  border-top:1px solid var(--line);display:flex;padding-bottom:var(--safe);
+}
+.nav button{
+  position:relative;
+  flex:1;padding:9px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.01em;
+  min-width:0;
+}
+.nav button span:not(.pip){max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.nav button.on{color:var(--teal)}
+.nav .pip{
+  position:absolute;top:4px;left:50%;margin-left:4px;background:var(--alert);color:#fff;
+  font-size:10px;font-weight:700;min-width:17px;height:17px;border-radius:999px;
+  display:grid;place-items:center;padding:0 4px;
+}
+
+/* ---------- primitives ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px}
+.pad{padding:13px 14px}
+.sec{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin:18px 2px 8px}
+.sec:first-child{margin-top:2px}
+.row{display:flex;gap:10px;align-items:center}
+.grow{flex:1;min-width:0}
+.tr{text-align:right}
+.tiny{font-size:12.5px;color:var(--ink2)}
+.mut{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums;font-weight:650;letter-spacing:-.02em}
+.trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.btn{
+  background:var(--teal);color:#fff;font-weight:650;font-size:15px;
+  padding:12px 16px;border-radius:9px;display:block;width:100%;text-align:center;
+}
+.btn.ghost{background:var(--surface);color:var(--teal);border:1.5px solid var(--line)}
+.btn.dim{background:var(--surface2);color:var(--ink2);border:1px solid var(--line)}
+.btn.wa{background:var(--wa)}
+.btn.sm{padding:9px 12px;font-size:13.5px;width:auto;display:inline-block}
+.btn:disabled{opacity:.4}
+
+.tag{
+  display:inline-block;font-size:11.5px;font-weight:650;padding:3px 8px;border-radius:6px;
+  background:var(--surface2);color:var(--ink2);white-space:nowrap
+}
+.tag.teal{background:var(--teal-l);color:var(--teal-d)}
+.tag.sun{background:var(--sun-l);color:#8A5600}
+.tag.ok{background:var(--ok-l);color:var(--ok)}
+.tag.alert{background:var(--alert-l);color:var(--alert)}
+
+label.f{display:block;margin-bottom:11px}
+label.f span{display:block;font-size:12.5px;font-weight:650;color:var(--ink2);margin-bottom:4px}
+.in{
+  width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:8px;
+  background:var(--surface);
+}
+select.in{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 17px) 20px,calc(100% - 12px) 20px;background-size:5px 5px;background-repeat:no-repeat}
+textarea.in{min-height:76px;resize:vertical;font-size:15px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+
+/* ---------- lead rows ---------- */
+.lead{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  margin-bottom:8px;overflow:hidden;width:100%;text-align:left}
+.lead .bar{width:5px;flex:none;background:var(--muted)}
+.lead .body{padding:11px 12px;flex:1;min-width:0}
+.lead .nm{font-weight:650;font-size:15px}
+.lead .meta{font-size:12.5px;color:var(--muted);margin-top:2px}
+.lead .rt{padding:11px 12px 11px 0;text-align:right;flex:none;display:flex;
+  flex-direction:column;justify-content:center;gap:4px;align-items:flex-end}
+
+/* ---------- follow-up ---------- */
+.fu{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  margin-bottom:11px;overflow:hidden}
+.fu.due{border-color:var(--sun);box-shadow:0 1px 0 var(--sun)}
+.fu .hd{padding:12px 14px 10px;display:flex;gap:10px;align-items:flex-start}
+.fu .msg{
+  margin:0 14px 12px;padding:11px 12px;background:var(--surface2);
+  border-left:3px solid var(--sun);border-radius:0 8px 8px 0;
+  font-size:14px;line-height:1.5;color:var(--ink2);white-space:pre-wrap;
+}
+.fu .acts{display:flex;gap:8px;padding:0 14px 13px}
+.fu .acts .btn{flex:2;min-width:0}
+.fu .acts .btn.dim{flex:1}
+
+/* ---------- detail sheet ---------- */
+.sheet{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.sheet .wrap{padding-bottom:calc(34px + var(--safe))}
+.sheet .shead{position:sticky;top:0;background:var(--teal-d);color:#fff;padding:11px 14px;
+  display:flex;align-items:center;gap:12px;z-index:5}
+.sheet .shead h2{font-size:16px;flex:1;min-width:0}
+.x{font-size:26px;line-height:1;color:#fff;padding:0 4px;font-weight:300}
+
+.stage{display:flex;flex-wrap:wrap;gap:6px}
+.stage button{padding:7px 10px;border-radius:7px;font-size:12.5px;font-weight:600;
+  background:var(--surface2);color:var(--ink2);border:1.5px solid transparent}
+.stage button.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.stage button.won.on{background:var(--ok);border-color:var(--ok)}
+.stage button.lost.on{background:var(--alert);border-color:var(--alert)}
+
+.log{border-left:2px solid var(--line);margin-left:5px;padding-left:14px}
+.log .e{padding-bottom:13px;position:relative}
+.log .e:before{content:'';position:absolute;left:-20px;top:5px;width:9px;height:9px;
+  border-radius:99px;background:var(--teal);border:2px solid var(--surface)}
+.log .e .w{font-size:11.5px;color:var(--muted)}
+
+.kv{display:flex;justify-content:space-between;gap:14px;padding:8px 0;
+  border-bottom:1px solid var(--line);font-size:14px;align-items:flex-start}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--muted);flex:1 1 auto;min-width:0}
+.kv .v{font-weight:600;text-align:right;flex:0 1 auto;min-width:0;overflow-wrap:anywhere}
+
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px}
+.stat .n{font-size:25px;font-weight:700;letter-spacing:-.035em;font-variant-numeric:tabular-nums;
+  line-height:1.1;overflow-wrap:anywhere}
+@media(max-width:360px){.stat .n{font-size:21px}}
+.stat .l{font-size:12px;color:var(--muted);margin-top:3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+
+.funnel .f{display:flex;align-items:center;gap:9px;padding:7px 0}
+.funnel .lb{width:96px;flex:none;font-size:13px;line-height:1.25}
+.funnel .track{flex:1;min-width:40px;height:7px;background:var(--surface2);
+  border-radius:99px;overflow:hidden}
+.funnel .vv{width:58px;flex:none;text-align:right;font-size:13px}
+.funnel .fill{height:100%;background:var(--teal);border-radius:99px}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + var(--safe));transform:translateX(-50%);
+  background:var(--ink);color:#fff;padding:11px 17px;border-radius:9px;font-size:14px;
+  font-weight:600;z-index:99;max-width:88vw;text-align:center}
+
+.gate{min-height:100dvh;display:grid;place-items:center;padding:24px;background:var(--teal-d)}
+.gate .box{background:var(--surface);border-radius:14px;padding:26px 22px;width:100%;max-width:330px}
+.empty{text-align:center;padding:38px 20px;color:var(--muted)}
+.empty p{margin:6px 0 16px;font-size:14px}
+hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   IPB PIPELINE  v1.0
+   Independent Power Bahamas internal CRM and quoting portal.
+   Single file. No build step. Runs offline or on Netlify.
+   ============================================================ */
+
+/* ---------- 1. STORAGE ----------------------------------------------------
+   Tries, in order: Netlify function (live, shared) -> browser storage (local)
+   -> memory (demo). Same app file works in all three situations.          */
+const Store = (() => {
+  let mode = 'memory', mem = null;
+  const KEY = 'ipb_pipeline_v1';
+
+  async function tryNet(){
+    try{
+      const r = await fetch('/.netlify/functions/leads',{cache:'no-store'});
+      if(!r.ok) return null;
+      const j = await r.json();
+      mode='net'; return j;
+    }catch(e){ return null; }
+  }
+  function tryLocal(){
+    try{
+      const raw = window.localStorage.getItem(KEY);
+      mode='local';
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return undefined; }
+  }
+  return {
+    get mode(){return mode},
+    async load(){
+      const net = await tryNet();
+      if(net) return net;
+      const loc = tryLocal();
+      if(loc !== undefined){ return loc; }
+      mode='memory'; return mem;
+    },
+    async save(data){
+      if(mode==='net'){
+        try{
+          await fetch('/.netlify/functions/leads',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(data)});
+          return;
+        }catch(e){ /* fall through to local */ }
+      }
+      try{ window.localStorage.setItem(KEY, JSON.stringify(data)); mode = mode==='net'?'net':'local'; }
+      catch(e){ mem = data; mode='memory'; }
+    }
+  };
+})();
+
+/* ---------- 2. REFERENCE DATA --------------------------------------------
+   Package definitions with true cost of goods from the Kevolt price list
+   dated 24 Jul 2026. Edit COGS or freight here and every profit figure in
+   the app updates. Nothing else needs touching.                            */
+const VAT = 0.10;          // Bahamas VAT
+const DUTY = 0.00;         // Solar currently 0%. Confirm batteries with your broker.
+// Set false if IPB is NOT VAT registered. If false, import VAT cannot be reclaimed,
+// so it is added to landed cost and no VAT is stripped out of the selling price.
+const VAT_REGISTERED = true;
+
+/* Real hardware, converted to inches from the Kevolt price list. Weights in pounds.
+   Clearances are the working allowances used by the space calculator below. */
+const HARDWARE = {
+  panel:      {name:'620W bifacial glass', w:93.8, h:44.5, d:1.2,  lb:72},
+  battery:    {name:'16.08kWh LiFePO4, model DD51314', w:22.6, d:15.2, h:24.0, lb:313, maxStack:3},
+  inv10:      {name:'10kW split phase',    w:24.4, h:17.5, d:5.1,  lb:60},
+  inv15:      {name:'15kW hybrid, SSE-HL15K', w:20.6, h:32.5, d:10.5, lb:110}
+};
+const CLEAR = {
+  panelGap:2,        // inches between panels
+  batterySide:6,     // each side of a battery stack
+  batteryFront:30,   // service access in front
+  inverterSide:12,   // each side, airflow
+  inverterAbove:12   // above and below
+};
+
+/* Works out every space figure Snoop needs before he drives out. */
+function spaceFor(code){
+  const p = PACKAGES[code]; if(!p) return null;
+  const B = HARDWARE.battery;
+  const inv = HARDWARE[p.invModel];
+
+  // Panel array
+  const pw = HARDWARE.panel.w + CLEAR.panelGap, ph = HARDWARE.panel.h + CLEAR.panelGap;
+  const arraySqft = Math.round(p.panelQty * pw * ph / 144);
+
+  // Battery bank. Use the fewest stacks allowed, then split evenly between them,
+  // so four batteries go 2 and 2 rather than 3 and 1.
+  const stacks = Math.ceil(p.batteryQty / B.maxStack);
+  const perStack = Math.ceil(p.batteryQty / stacks);
+  const bankW = stacks * B.w + (stacks-1) * CLEAR.batterySide;
+  const bankH = perStack * B.h;
+  const bankFloorSqft = ((bankW + CLEAR.batterySide*2) * (B.d + CLEAR.batteryFront) / 144);
+
+  // Inverter wall run
+  const invW = p.invQty * inv.w + (p.invQty-1) * CLEAR.inverterSide;
+  const wallW = invW + CLEAR.inverterSide*2;
+  const wallH = inv.h + CLEAR.inverterAbove*2;
+
+  const weight = Math.round(p.panelQty*HARDWARE.panel.lb + p.batteryQty*B.lb + p.invQty*inv.lb);
+
+  return {
+    arraySqft,
+    panelEach: HARDWARE.panel.w.toFixed(1)+' x '+HARDWARE.panel.h.toFixed(1)+' in',
+    batteryQty:p.batteryQty, stacks, perStack,
+    bankW:Math.round(bankW), bankD:B.d, bankH:Math.round(bankH),
+    bankFloorSqft: Math.round(bankFloorSqft*10)/10,
+    invName:inv.name, invQty:p.invQty,
+    invEach: inv.w.toFixed(1)+' x '+inv.h.toFixed(1)+' x '+inv.d.toFixed(1)+' in',
+    wallW:Math.round(wallW), wallH:Math.round(wallH),
+    wallSqft: Math.round(wallW*wallH/144*10)/10,
+    roomSqft: Math.round((bankFloorSqft + wallW*(inv.d+CLEAR.inverterSide)/144)*10)/10,
+    weight
+  };
+}
+
+const PACKAGES = {
+  p1200:{ code:'p1200', name:'PowerUP 1200', price:11599, cogs:3465, freight:1600,
+    billMin:100, billMax:300, kwh:1200,
+    panels:'8 x 620W', inverter:'1 x 10kW', battery:'1 x 16kWh',
+    mount:'Roof mount, 8 panels', wire:'100ft PV wire', combiner:'1 x 2-in/2-out',
+    panelQty:8, batteryQty:1, invModel:'inv10', invQty:1,
+    suits:'2-3 bed, 2-3 mini splits, gas stove and dryer' },
+  p2400:{ code:'p2400', name:'PowerUP 2400', price:15599, cogs:5804, freight:1600,
+    billMin:400, billMax:600, kwh:2400,
+    panels:'16 x 620W', inverter:'1 x 10kW', battery:'2 x 16kWh',
+    mount:'Roof mount, 16 panels', wire:'200ft PV wire', combiner:'1 x 2-in/2-out',
+    panelQty:16, batteryQty:2, invModel:'inv10', invQty:1,
+    suits:'2-3 bed with electric stove, dryer, dishwasher, water heater' },
+  p4400:{ code:'p4400', name:'PowerUP 4400', price:21999, cogs:8546, freight:1600,
+    billMin:800, billMax:1000, kwh:4400,
+    panels:'30 x 620W', inverter:'1 x 15kW', battery:'2 x 16kWh',
+    mount:'Roof mount, 30 panels', wire:'600ft PV wire', combiner:'1 x 3-in/3-out',
+    panelQty:30, batteryQty:2, invModel:'inv15', invQty:1,
+    suits:'3-4 bed, 4-5 mini splits, full electric. Third battery often worth quoting.' },
+  pmax:{ code:'pmax', name:'PowerUP Max', price:45000, cogs:17092, freight:1600,
+    billMin:1500, billMax:99999, kwh:8800,
+    panels:'60 x 620W', inverter:'2 x 15kW', battery:'4 x 16kWh',
+    mount:'Ground or roof, 60 panels', wire:'1200ft PV wire', combiner:'2 x 3-in/3-out',
+    panelQty:60, batteryQty:4, invModel:'inv15', invQty:2,
+    suits:'Small to mid business, 7-10 mini splits. Custom priced, this is a baseline.' }
+};
+const PKG_LIST = Object.values(PACKAGES);
+
+// Profit, net of VAT both directions. Assumes IPB reclaims input VAT.
+function landedOf(code){
+  const p = PACKAGES[code]; if(!p) return 0;
+  const base = p.cogs * (1+DUTY) + p.freight;
+  // Registered: import VAT is reclaimed, so it is not a cost.
+  // Not registered: it is a cost and stays in.
+  return Math.round(VAT_REGISTERED ? base : base * (1+VAT));
+}
+function netRevenueOf(code){
+  const p = PACKAGES[code]; if(!p) return 0;
+  return VAT_REGISTERED ? p.price/(1+VAT) : p.price;
+}
+function profitOf(code){
+  if(!PACKAGES[code]) return 0;
+  return Math.round(netRevenueOf(code) - landedOf(code));
+}
+function marginOf(code){
+  if(!PACKAGES[code]) return 0;
+  return Math.round(profitOf(code) / netRevenueOf(code) * 100);
+}
+/* Bills between the published ranges (a $350 bill, a $700 bill) used to fall
+   through to Max. Match on the upper threshold instead so nothing lands wrong. */
+function matchPackage(bill){
+  const b = Number(bill)||0;
+  if(b<=0) return '';
+  if(b<=300)  return 'p1200';
+  if(b<=600)  return 'p2400';
+  if(b<=1000) return 'p4400';
+  return 'pmax';
+}
+
+const SALES_STAGES = [
+  {id:'new',        label:'New',              c:'#7A939B'},
+  {id:'contacted',  label:'Contacted',        c:'#7A939B'},
+  {id:'responded',  label:'Responded',        c:'#0A7D8C'},
+  {id:'call_booked',label:'Call booked',      c:'#0A7D8C'},
+  {id:'call_done',  label:'Call completed',   c:'#0A7D8C'},
+  {id:'est_req',    label:'Estimate requested',c:'#E8930C'},
+  {id:'est_sent',   label:'Estimate sent',    c:'#E8930C'},
+  {id:'visit_req',  label:'Site visit requested',c:'#E8930C'},
+  {id:'visit_done', label:'Site visit completed',c:'#E8930C'},
+  {id:'won',        label:'Closed won',       c:'#1B8A56'},
+  {id:'lost',       label:'Closed lost',      c:'#C13D28'},
+  {id:'dormant',    label:'Dormant',          c:'#B9C7CB'}
+];
+const PAY_STAGES = [
+  {id:'none',    label:'Nothing yet'},
+  {id:'invoiced',label:'Deposit invoiced'},
+  {id:'dep50',   label:'50% deposit in'},
+  {id:'pay75',   label:'75% in'},
+  {id:'paid',    label:'Paid in full'}
+];
+const FUL_STAGES = [
+  {id:'none',     label:'Not started'},
+  {id:'ordered',  label:'Ordered'},
+  {id:'shipped',  label:'Shipped'},
+  {id:'landed',   label:'Landed in Bahamas'},
+  {id:'delivered',label:'Delivered to client'},
+  {id:'scheduled',label:'Install scheduled'},
+  {id:'started',  label:'Install started'},
+  {id:'complete', label:'Install complete'},
+  {id:'invoiced', label:'Final invoice sent'},
+  {id:'settled',  label:'Final payment in'}
+];
+const SOURCES = ['WhatsApp','Messenger','JotForm','Referral','Walk in','Other'];
+const ISLANDS = ['New Providence','Eleuthera','Grand Bahama','Abaco','Exuma','Andros',
+  'Long Island','Cat Island','Bimini','Berry Islands','Harbour Island','Other'];
+
+/* ---------- 3. FOLLOW-UP SEQUENCE ----------------------------------------
+   Days are counted from the day the sequence starts, not from the last send.
+   If Noah is away for three weeks he comes back to ONE prompt per lead,
+   the most recent one due. Missed steps are skipped, never stacked.        */
+const SEQUENCE = [
+  {day:1,  label:'24 hours', body:"Hey [NAME], just following up on the solar. Did you get a chance to look at what I sent over?"},
+  {day:3,  label:'3 days',   body:"[NAME], checking back in. Any questions come up about the system or how the install side works? Happy to clear anything up."},
+  {day:5,  label:'5 days',   body:"Hey [NAME], the summer bills are the ones that hurt the most, and that's what these systems are built to take out. Still worth a conversation?"},
+  {day:12, label:'Week 1',   body:"Hey [NAME], is solar still on your mind? Most people I talk to aren't really buying panels. They're putting money into the house instead of handing it to the power company every month for nothing back."},
+  {day:19, label:'Week 2',   body:"[NAME], one way to look at it. At what you're paying now, you'll spend the cost of a system on light bills in the next few years anyway. The only question is whether that money goes to the power company or into your own house."},
+  {day:26, label:'Week 3',   body:"Hey [NAME], thinking about you with storm season on us. The people who put systems in aren't just cutting the bill, they're the ones with lights on when the rest of the street doesn't. Worth a conversation?"},
+  {day:33, label:'Week 4',   body:"[NAME], I'll leave it here for now. If solar comes back around for the house, you know where to find me."}
+];
+const QUARTERLY = {label:'Quarterly touch', days:90,
+  body:"Hey [NAME], checking in. Bills have not got any cheaper. If solar is back on the table for the house let me know and I'll get you a number."};
+const BROADCAST = "Hey [NAME], we have a shipment landing in [MONTH] and I'm holding allocation for the people who've been in touch. If solar is still something you want done this year, let me know and I'll put your name against a system before they're spoken for.";
+
+const DAY = 86400000;
+const today = () => { const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); };
+const daysSince = ts => Math.floor((Date.now()-ts)/DAY);
+
+/* Returns the single message that is due for this lead right now, or null. */
+function dueFollowUp(l){
+  const f = l.followUp;
+  if(!f || !f.active) return null;
+  if(l.salesStage==='won' || l.salesStage==='lost') return null;
+  const elapsed = daysSince(f.startedAt);
+
+  if(f.step >= SEQUENCE.length){
+    const since = daysSince(f.lastSentAt || f.startedAt);
+    if(since >= QUARTERLY.days)
+      return {label:QUARTERLY.label, body:fill(QUARTERLY.body,l), step:f.step, quarterly:true,
+              overdue:since-QUARTERLY.days};
+    return null;
+  }
+  // Highest step whose due day has passed. Skips missed ones.
+  let pick = -1;
+  for(let i=f.step;i<SEQUENCE.length;i++){ if(elapsed >= SEQUENCE[i].day) pick = i; }
+  if(pick < 0) return null;
+  return {label:SEQUENCE[pick].label, body:fill(SEQUENCE[pick].body,l), step:pick,
+          overdue: elapsed - SEQUENCE[pick].day, skipped: pick - f.step};
+}
+function fill(t,l){
+  return t.replace(/\[NAME\]/g,(l.name||'').split(' ')[0]||'there')
+          .replace(/\[MONTH\]/g, S.data.settings.shipmentMonth||'the coming weeks');
+}
+function waLink(phone,text){
+  const digits = String(phone||'').replace(/\D/g,'');
+  return 'https://wa.me/'+digits+'?text='+encodeURIComponent(text);
+}
+
+/* ---------- 4. APP STATE -------------------------------------------------- */
+const S = {
+  role:null, tab:'today', open:null, filter:'all', data:null, toast:null
+};
+const ROLES = {
+  noah :{code:'noah',  pin:'2242', label:'Noah',  title:'Sales'},
+  ceo  :{code:'ceo',   pin:'1111', label:'Zach',  title:'CEO'},
+  snoop:{code:'snoop', pin:'7777', label:'Snoop', title:'Install'}
+};
+
+function blank(){
+  return {
+    leads:[],
+    settings:{shipmentMonth:'', lastBroadcast:null},
+    meta:{version:1, created:Date.now()}
+  };
+}
+function seed(){
+  const d = blank();
+  const mk = (o)=>Object.assign({
+    id:'l'+Math.random().toString(36).slice(2,9),
+    createdAt:Date.now(), updatedAt:Date.now(),
+    source:'WhatsApp', propertyType:'home', name:'', phone:'', email:'',
+    island:'New Providence', address:'', bill:0, package:'', objective:'',
+    salesStage:'new', payStage:'none', fulStage:'none',
+    nextAction:'', nextActionDate:'', assigned:false,
+    lostReason:'', notes:'',
+    followUp:{active:false, step:0, startedAt:Date.now(), lastSentAt:null},
+    quote:null, survey:null, broadcasts:[],
+    log:[]
+  },o);
+
+  d.leads = [
+    mk({name:'Levardo Blyden', phone:'12428019354', email:'Lblyden@gmail.com',
+      island:'New Providence', address:'Sea Breeze Estates', bill:350, package:'p1200',
+      salesStage:'est_sent', objective:'Cut the bill, roof mount',
+      createdAt:Date.now()-14*DAY,
+      quote:{number:'IPB-261020-1', date:'2026-09-02', total:11599, status:'sent'},
+      followUp:{active:true, step:1, startedAt:Date.now()-6*DAY, lastSentAt:Date.now()-5*DAY},
+      log:[{at:Date.now()-14*DAY,type:'note',body:'Came in through WhatsApp ad. $350 bill.',by:'Noah'},
+           {at:Date.now()-6*DAY,type:'stage',body:'Estimate sent, $11,599',by:'Noah'}]}),
+    mk({name:'Dave Macnicol', phone:'14167103040', email:'david.macnicol@macnicolasset.com',
+      island:'Eleuthera', address:'Winding Bay', bill:400, package:'p2400',
+      salesStage:'visit_req', objective:'Needs ground mount, no roof space',
+      assigned:true, createdAt:Date.now()-21*DAY,
+      quote:{number:'IPB-261021-1', date:'2026-09-02', total:16831, status:'sent'},
+      nextAction:'Confirm site visit date with Snoop', nextActionDate:new Date(Date.now()).toISOString().slice(0,10),
+      followUp:{active:false, step:0, startedAt:Date.now(), lastSentAt:null},
+      log:[{at:Date.now()-21*DAY,type:'note',body:'Referral. Winding Bay property.',by:'Noah'},
+           {at:Date.now()-3*DAY,type:'stage',body:'Asked for a site visit',by:'Noah'}]}),
+    mk({name:'Marlene Rolle', phone:'12423571188', island:'Eleuthera',
+      address:'Tarpum Bay', bill:220, package:'p1200', source:'JotForm',
+      salesStage:'contacted', objective:'Wants off grid before storm season',
+      createdAt:Date.now()-9*DAY,
+      followUp:{active:true, step:0, startedAt:Date.now()-8*DAY, lastSentAt:null},
+      log:[{at:Date.now()-9*DAY,type:'note',body:'JotForm submission from the website.',by:'System'}]}),
+    mk({name:'Kendal Stubbs', phone:'12424422901', island:'New Providence',
+      address:'Carmichael Road', bill:900, package:'p4400', source:'Messenger',
+      salesStage:'call_done', objective:'Big house, full electric, wants a real number',
+      createdAt:Date.now()-4*DAY,
+      nextAction:'Send the 4400 estimate', nextActionDate:new Date(Date.now()).toISOString().slice(0,10),
+      followUp:{active:false, step:0, startedAt:Date.now(), lastSentAt:null},
+      log:[{at:Date.now()-2*DAY,type:'call',body:'Good call. Asked about adding a third battery.',by:'Noah'}]}),
+    mk({name:'Hezekiah Gibson', phone:'12424708115', island:'Eleuthera',
+      address:'Midway Cost Cutters, Savannah Sound', bill:2400, package:'pmax',
+      propertyType:'business', salesStage:'won', payStage:'dep50', fulStage:'ordered',
+      objective:'Commercial, grocery. Custom sized.', assigned:true,
+      createdAt:Date.now()-45*DAY,
+      quote:{number:'IPB-261016-1', date:'2026-08-23', total:74017, status:'accepted'},
+      survey:{visitDate:'2026-08-30', roofType:'Flat cement', usableArea:'2100',
+        panelsFit:'60', wireRun:'150', batteryLoc:'Back store room',
+        roofBuildout:true, roofNotes:'Needs a ground array for about half the panels',
+        enclosure:true, enclosureNotes:'Battery room to be built out, roughly 8x10',
+        installQuote:'10000', verdict:'flagged',
+        recommend:'Split roof and ground array. Add a battery.',
+        comments:'Roof will not carry all 60. Ground mount the balance on the lot side.',
+        by:'Snoop', at:Date.now()-12*DAY},
+      log:[{at:Date.now()-45*DAY,type:'note',body:'Walked in through the CEO.',by:'Zach'},
+           {at:Date.now()-12*DAY,type:'survey',body:'Snoop flagged the system size',by:'Snoop'},
+           {at:Date.now()-8*DAY,type:'stage',body:'Closed won. 50% deposit received.',by:'Noah'}]}),
+    mk({name:'Andrea Ferguson', phone:'12423595544', island:'Abaco',
+      address:'Marsh Harbour', bill:500, package:'p2400',
+      salesStage:'est_sent', objective:'Comparing us against another quote',
+      createdAt:Date.now()-40*DAY,
+      quote:{number:'IPB-261009-1', date:'2026-08-05', total:15599, status:'sent'},
+      followUp:{active:true, step:3, startedAt:Date.now()-34*DAY, lastSentAt:Date.now()-20*DAY},
+      log:[{at:Date.now()-40*DAY,type:'note',body:'Very engaged, then went quiet.',by:'Noah'}]}),
+    mk({name:'Trevor Knowles', phone:'12423445120', island:'New Providence',
+      address:'Yamacraw', bill:150, package:'p1200',
+      salesStage:'lost', lostReason:'Price. Going with a generator instead.',
+      createdAt:Date.now()-30*DAY,
+      followUp:{active:false, step:0, startedAt:Date.now(), lastSentAt:null},
+      log:[{at:Date.now()-10*DAY,type:'stage',body:'Closed lost',by:'Noah'}]})
+  ];
+  return d;
+}
+
+/* ---------- 5. HELPERS ---------------------------------------------------- */
+const $ = s => document.querySelector(s);
+const money = n => '$'+Math.round(Number(n)||0).toLocaleString('en-US');
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const stageOf = id => SALES_STAGES.find(s=>s.id===id) || SALES_STAGES[0];
+const pkgName = c => PACKAGES[c] ? PACKAGES[c].name : 'Not matched';
+const fmtDate = ts => ts ? new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+const ago = ts => { const d=daysSince(ts); return d===0?'today':d===1?'1 day ago':d+' days ago'; };
+
+function save(){ S.data.meta.updated = Date.now(); Store.save(S.data); }
+function toast(m){ S.toast=m; render(); setTimeout(()=>{S.toast=null;render();},2100); }
+function logTo(l,type,body){ l.log.unshift({at:Date.now(),type,body,by:ROLES[S.role].label}); }
+function leadById(id){ return S.data.leads.find(l=>l.id===id); }
+
+function visibleLeads(){
+  if(S.role==='snoop') return S.data.leads.filter(l=>l.assigned);
+  return S.data.leads;
+}
+function dueList(){
+  return visibleLeads().map(l=>({l,fu:dueFollowUp(l)})).filter(x=>x.fu)
+    .sort((a,b)=>b.fu.overdue-a.fu.overdue);
+}
+function actionList(){
+  const t = today();
+  return visibleLeads().filter(l=>l.nextActionDate &&
+    new Date(l.nextActionDate+'T00:00:00').getTime() <= t &&
+    l.salesStage!=='won' && l.salesStage!=='lost')
+    .sort((a,b)=>a.nextActionDate.localeCompare(b.nextActionDate));
+}
+function goingCold(){
+  return visibleLeads().filter(l=>{
+    if(['won','lost','dormant'].includes(l.salesStage)) return false;
+    if(l.followUp.active) return false;
+    if(l.nextActionDate) return false;
+    const last = l.log[0] ? l.log[0].at : l.createdAt;
+    return daysSince(last) >= 7;
+  });
+}
+
+/* ---------- 6. ACTIONS ---------------------------------------------------- */
+function setStage(l,id){
+  l.salesStage = id; l.updatedAt = Date.now();
+  logTo(l,'stage','Moved to '+stageOf(id).label);
+  // Any sign of life kills the sequence. That is the whole point of it.
+  if(['responded','call_booked','call_done','won','lost'].includes(id)){
+    l.followUp.active = false; l.followUp.step = 0;
+  }
+  if(['est_sent','contacted'].includes(id) && !l.followUp.active){
+    l.followUp = {active:true, step:0, startedAt:Date.now(), lastSentAt:null};
+    logTo(l,'note','Follow-up sequence started');
+  }
+  save(); render();
+}
+function sendFollowUp(l,fu){
+  window.open(waLink(l.phone,fu.body),'_blank');
+  l.followUp.step = fu.quarterly ? l.followUp.step : fu.step+1;
+  l.followUp.lastSentAt = Date.now();
+  logTo(l,'whatsapp','Sent '+fu.label+(fu.skipped>0?' (skipped '+fu.skipped+' earlier steps)':''));
+  if(l.salesStage==='new') l.salesStage='contacted';
+  save(); toast('Logged. WhatsApp opened.');
+}
+function theyReplied(l){
+  l.followUp.active=false; l.followUp.step=0;
+  if(['new','contacted'].includes(l.salesStage)) l.salesStage='responded';
+  logTo(l,'note','Customer replied. Sequence stopped.');
+  save(); toast('Sequence stopped');
+}
+function declined(l){
+  l.salesStage='lost'; l.followUp.active=false;
+  l.lostReason = l.lostReason || 'Declined, asked not to be contacted';
+  logTo(l,'stage','Declined. Removed from all sequences.');
+  save(); render();
+}
+
+function addLead(f){
+  const l = {
+    id:'l'+Math.random().toString(36).slice(2,9),
+    createdAt:Date.now(), updatedAt:Date.now(),
+    source:f.source, propertyType:f.propertyType, name:f.name, phone:f.phone,
+    email:f.email||'', island:f.island, address:f.address||'',
+    bill:Number(f.bill)||0, package:f.package||matchPackage(f.bill),
+    objective:f.objective||'',
+    salesStage:'new', payStage:'none', fulStage:'none',
+    nextAction:'', nextActionDate:'', assigned:false, lostReason:'', notes:'',
+    followUp:{active:true, step:0, startedAt:Date.now(), lastSentAt:null},
+    quote:null, survey:null, broadcasts:[],
+    log:[{at:Date.now(),type:'note',body:'Lead created from '+f.source,by:ROLES[S.role].label}]
+  };
+  S.data.leads.unshift(l); save();
+  return l;
+}
+
+function exportJSON(){
+  dl('ipb-pipeline-'+new Date().toISOString().slice(0,10)+'.json',
+     JSON.stringify(S.data,null,2),'application/json');
+}
+function exportCSV(){
+  const cols = ['name','phone','email','island','address','bill','package','source',
+    'propertyType','salesStage','payStage','fulStage','nextAction','nextActionDate',
+    'lostReason','objective','notes'];
+  const head = cols.join(',');
+  const rows = S.data.leads.map(l=>cols.map(c=>{
+    let v = c==='package' ? pkgName(l[c]) : l[c];
+    v = String(v??'').replace(/"/g,'""');
+    return /[",\n]/.test(v) ? '"'+v+'"' : v;
+  }).join(','));
+  dl('ipb-leads-'+new Date().toISOString().slice(0,10)+'.csv',[head,...rows].join('\n'),'text/csv');
+}
+function dl(name,content,type){
+  const b = new Blob([content],{type});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  toast('Downloaded');
+}
+
+/* Space needed on site. Shown to Snoop before he visits and on every lead. */
+function spaceBlock(code,heading){
+  const sp = spaceFor(code); if(!sp) return '';
+  return `<div class="sec">${heading||'Space this system needs'}</div>
+  <div class="card pad">
+    <div class="kv"><span class="k">Panel array</span>
+      <span class="v">${sp.arraySqft} sq ft<br><span class="tiny mut">${sp.batteryQty?'':''}${PACKAGES[code].panelQty} panels at ${sp.panelEach}</span></span></div>
+    <hr class="sep">
+    <div class="kv"><span class="k">Battery bank</span>
+      <span class="v">${sp.bankW} x ${sp.bankD} in<br><span class="tiny mut">${sp.batteryQty} unit${sp.batteryQty>1?'s':''}${sp.stacks>1?', '+sp.stacks+' stacks':''}, ${sp.bankH} in tall</span></span></div>
+    <div class="kv"><span class="k">Floor space, with access</span>
+      <span class="v">${sp.bankFloorSqft} sq ft</span></div>
+    <hr class="sep">
+    <div class="kv"><span class="k">Inverter</span>
+      <span class="v">${sp.invQty} x ${sp.invEach}<br><span class="tiny mut">${sp.invName}</span></span></div>
+    <div class="kv"><span class="k">Clear wall needed</span>
+      <span class="v">${sp.wallW} x ${sp.wallH} in<br><span class="tiny mut">${sp.wallSqft} sq ft</span></span></div>
+    <hr class="sep">
+    <div class="kv"><span class="k"><strong>Total equipment area</strong></span>
+      <span class="v" style="color:var(--teal-d)"><strong>${sp.roomSqft} sq ft</strong></span></div>
+    <div class="kv"><span class="k">Equipment weight</span><span class="v">${sp.weight.toLocaleString()} lb</span></div>
+    <p class="tiny mut" style="margin:10px 0 0">Allows ${CLEAR.batterySide} in either side of the
+      batteries, ${CLEAR.batteryFront} in in front for service, and ${CLEAR.inverterSide} in
+      around the inverter for airflow. Panels allow a ${CLEAR.panelGap} in gap.
+      Batteries stack a maximum of ${HARDWARE.battery.maxStack} high.</p>
+  </div>`;
+}
+
+/* ---------- 7. VIEWS ------------------------------------------------------ */
+
+function viewGate(){
+  return `<div class="gate"><div class="box">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px">
+      ${logoMark('#0A7D8C',26)}
+      <h1 style="font-size:19px">IPB Pipeline</h1>
+    </div>
+    <p class="tiny mut" style="margin:0 0 18px">Independent Power Bahamas</p>
+    <label class="f"><span>Who is this</span>
+      <select class="in" id="g-role">
+        <option value="noah">Noah, sales</option>
+        <option value="ceo">Zach, CEO</option>
+        <option value="snoop">Snoop, install</option>
+      </select></label>
+    <label class="f"><span>Passcode</span>
+      <input class="in" id="g-pin" type="tel" inputmode="numeric" placeholder="4 digits"></label>
+    <button class="btn" onclick="doGate()">Open pipeline</button>
+    <p class="tiny mut" style="margin:14px 0 0;text-align:center">
+      Demo codes: 2242 / 1111 / 7777</p>
+  </div></div>`;
+}
+window.doGate = () => {
+  const r = $('#g-role').value, pin = $('#g-pin').value.trim();
+  if(ROLES[r].pin !== pin){ toast('That passcode is wrong'); return; }
+  S.role = r; S.tab = r==='snoop' ? 'jobs' : 'today';
+  try{ sessionStorage.setItem('ipb_role',r); }catch(e){}
+  render();
+};
+
+function logoMark(c,s){
+  return `<svg class="mark" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="9.5" r="4" fill="${c==='#fff'?'#F2A007':'#E8930C'}"/>
+    <path d="M2 17h20M4 20h16M6.5 14.2h11" stroke="${c}" stroke-width="2" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function viewTop(){
+  const r = ROLES[S.role];
+  return `<div class="top">${logoMark('#fff',22)}
+    <h1>IPB Pipeline</h1>
+    <button class="who" onclick="signOut()">${r.label}, ${r.title}</button></div>`;
+}
+window.signOut = () => { S.role=null; try{sessionStorage.removeItem('ipb_role');}catch(e){} render(); };
+
+function viewNav(){
+  const due = dueList().length + actionList().length;
+  const tabs = S.role==='snoop'
+    ? [['jobs','To visit',icon('clip')],['jobsdone','Done',icon('list')]]
+    : [['today','Today',icon('sun')],['pipeline','Pipeline',icon('cols')],
+       ['leads','Leads',icon('list')],['money','Money',icon('chart')],
+       ['more','More',icon('dots')]];
+  return `<nav class="nav">${tabs.map(([id,l,ic])=>`
+    <button class="${S.tab===id?'on':''}" onclick="go('${id}')">
+      ${id==='today'&&due?`<span class="pip">${due}</span>`:''}${ic}<span>${l}</span>
+    </button>`).join('')}</nav>`;
+}
+window.go = t => { S.tab=t; S.open=null; window.scrollTo(0,0); render(); };
+
+function icon(n){
+  const p = {
+    sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    cols:'<rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="11" rx="1"/><rect x="17" y="4" width="4" height="8" rx="1"/>',
+    list:'<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+    chart:'<path d="M3 20h18M7 20v-7M12 20V6M17 20v-4"/>',
+    dots:'<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
+    clip:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h4"/>'
+  }[n];
+  return `<svg viewBox="0 0 24 24">${p}</svg>`;
+}
+
+/* --- TODAY --- */
+function viewToday(){
+  const due = dueList(), acts = actionList(), cold = goingCold();
+  let h = '<div class="wrap">';
+
+  if(!due.length && !acts.length && !cold.length){
+    h += `<div class="empty"><h3>Nothing waiting on you</h3>
+      <p>No follow-ups due, no actions dated for today.</p>
+      <button class="btn sm" onclick="go('leads')">Add a lead</button></div>`;
+  }
+
+  if(acts.length){
+    h += `<div class="sec">Your next actions</div>`;
+    acts.forEach(l=>{
+      const over = daysSince(new Date(l.nextActionDate+'T00:00:00').getTime());
+      h += `<button class="lead" onclick="openLead('${l.id}')">
+        <div class="bar" style="background:${stageOf(l.salesStage).c}"></div>
+        <div class="body">
+          <div class="nm">${esc(l.name)}</div>
+          <div class="meta">${esc(l.nextAction||'Action due')}</div>
+        </div>
+        <div class="rt">${over>0?`<span class="tag alert">${over}d late</span>`
+          :'<span class="tag sun">Today</span>'}</div></button>`;
+    });
+  }
+
+  if(due.length){
+    h += `<div class="sec">Follow-ups ready to send</div>`;
+    due.forEach(({l,fu})=>{
+      h += `<div class="fu ${fu.overdue>=0?'due':''}">
+        <div class="hd">
+          <div class="grow">
+            <div style="font-weight:650">${esc(l.name)}</div>
+            <div class="tiny mut">${esc(l.island)} &nbsp;&middot;&nbsp; ${pkgName(l.package)} &nbsp;&middot;&nbsp; ${stageOf(l.salesStage).label}</div>
+          </div>
+          <span class="tag ${fu.overdue>3?'alert':'sun'}">${esc(fu.label)}</span>
+        </div>
+        <div class="msg">${esc(fu.body)}</div>
+        ${fu.skipped>0?`<div class="tiny mut" style="padding:0 14px 9px">
+          You were away. ${fu.skipped} earlier message${fu.skipped>1?'s':''} skipped, this is the current one.</div>`:''}
+        <div class="acts">
+          <button class="btn wa" onclick="doSend('${l.id}',${fu.step},${!!fu.quarterly})">Send on WhatsApp</button>
+          <button class="btn dim sm" onclick="doReplied('${l.id}')">They replied</button>
+        </div>
+      </div>`;
+    });
+  }
+
+  if(cold.length){
+    h += `<div class="sec">Going cold, no plan set</div>`;
+    cold.forEach(l=>{
+      const last = l.log[0] ? l.log[0].at : l.createdAt;
+      h += leadRow(l, ago(last));
+    });
+  }
+  return h+'</div>';
+}
+window.doSend = (id,step,q) => {
+  const l = leadById(id); const fu = dueFollowUp(l);
+  if(fu) sendFollowUp(l,fu); render();
+};
+window.doReplied = id => { theyReplied(leadById(id)); render(); };
+
+function leadRow(l,right){
+  const p = PACKAGES[l.package];
+  return `<button class="lead" onclick="openLead('${l.id}')">
+    <div class="bar" style="background:${stageOf(l.salesStage).c}"></div>
+    <div class="body">
+      <div class="nm trunc">${esc(l.name)}</div>
+      <div class="meta trunc">${esc(l.island)} &nbsp;&middot;&nbsp; ${l.bill?money(l.bill)+'/mo':'No bill'} &nbsp;&middot;&nbsp; ${p?p.name:'Unmatched'}</div>
+    </div>
+    <div class="rt">
+      <span class="tag" style="background:${stageOf(l.salesStage).c}22;color:${stageOf(l.salesStage).c}">${stageOf(l.salesStage).label}</span>
+      ${right?`<span class="tiny mut">${esc(right)}</span>`:''}
+    </div></button>`;
+}
+
+/* --- PIPELINE --- */
+function viewPipeline(){
+  const groups = SALES_STAGES.filter(s=>s.id!=='dormant');
+  let h = '<div class="wrap">';
+  const live = visibleLeads().filter(l=>l.salesStage!=='lost');
+  const val = live.filter(l=>PACKAGES[l.package]).reduce((a,l)=>a+PACKAGES[l.package].price,0);
+  h += `<div class="grid2">
+    <div class="stat"><div class="n">${live.length}</div><div class="l">Live leads</div></div>
+    <div class="stat"><div class="n">${money(val)}</div><div class="l">Pipeline value</div></div>
+  </div>`;
+  groups.forEach(s=>{
+    const ls = visibleLeads().filter(l=>l.salesStage===s.id);
+    if(!ls.length) return;
+    h += `<div class="sec">${s.label}, ${ls.length}</div>`;
+    ls.forEach(l=>h+=leadRow(l));
+  });
+  return h+'</div>';
+}
+
+/* --- LEADS --- */
+function viewLeads(){
+  let ls = visibleLeads();
+  if(S.filter==='open') ls = ls.filter(l=>!['won','lost','dormant'].includes(l.salesStage));
+  if(S.filter==='won') ls = ls.filter(l=>l.salesStage==='won');
+  const q = (S.search||'').toLowerCase();
+  if(q) ls = ls.filter(l=>(l.name+l.phone+l.island+l.address).toLowerCase().includes(q));
+  let h = `<div class="wrap">
+    <button class="btn" onclick="openNew()" style="margin-bottom:11px">Add a lead</button>
+    <input class="in" placeholder="Search name, number, island" value="${esc(S.search||'')}"
+      oninput="S.search=this.value;render()" style="margin-bottom:9px">
+    <div class="row" style="margin-bottom:12px">
+      ${[['all','Everyone'],['open','Open'],['won','Won']].map(([k,l])=>
+        `<button class="btn ${S.filter===k?'':'dim'} sm" style="flex:1"
+          onclick="S.filter='${k}';render()">${l}</button>`).join('')}
+    </div>`;
+  if(!ls.length) h += `<div class="empty"><h3>No leads here</h3><p>Try a different filter.</p></div>`;
+  ls.forEach(l=>h+=leadRow(l));
+  return h+'</div>';
+}
+
+/* --- MONEY (CEO + Noah) --- */
+function viewMoney(){
+  const all = S.data.leads;
+  const won = all.filter(l=>l.salesStage==='won');
+  const open = all.filter(l=>!['won','lost','dormant'].includes(l.salesStage));
+  const sum = (arr,f) => arr.reduce((a,l)=>a+(f(l)||0),0);
+  const rev = l => PACKAGES[l.package] ? PACKAGES[l.package].price : 0;
+  const prof = l => PACKAGES[l.package] ? profitOf(l.package) : 0;
+
+  const wonProfit = sum(won,prof), openProfit = sum(open,prof);
+  const step = id => all.filter(l=>reached(l.salesStage,id)).length;
+
+  let h = `<div class="wrap">
+  <div class="grid2">
+    <div class="stat"><div class="n" style="color:var(--ok)">${money(wonProfit)}</div>
+      <div class="l">Profit closed, ${won.length} deal${won.length===1?'':'s'}</div></div>
+    <div class="stat"><div class="n">${money(openProfit)}</div>
+      <div class="l">Profit in the pipeline</div></div>
+    <div class="stat"><div class="n">${money(sum(won,rev))}</div><div class="l">Revenue closed</div></div>
+    <div class="stat"><div class="n">${money(sum(open,rev))}</div><div class="l">Revenue open</div></div>
+  </div>
+
+  <div class="sec">Where leads fall out</div>
+  <div class="card pad funnel">`;
+  const total = all.length || 1;
+  [['new','All leads'],['responded','Replied'],['call_done','Got on a call'],
+   ['est_sent','Estimate sent'],['won','Closed won']].forEach(([id,label])=>{
+    const n = step(id), pc = Math.round(n/total*100);
+    h += `<div class="f"><div class="lb">${label}</div>
+      <div class="track"><div class="fill" style="width:${pc}%"></div></div>
+      <div class="num vv">${n} &nbsp;${pc}%</div></div>`;
+  });
+  const estSent = step('est_sent')||1;
+  h += `<hr class="sep"><div class="kv"><span class="k">Estimate to close</span>
+    <span class="v">${Math.round(won.length/estSent*100)}%</span></div>
+    <div class="kv"><span class="k">Lead to close</span>
+    <span class="v">${Math.round(won.length/total*100)}%</span></div></div>`;
+
+  h += `<div class="sec">Margin by package</div><div class="card pad">`;
+  PKG_LIST.forEach(p=>{
+    const cnt = all.filter(l=>l.package===p.code).length;
+    h += `<div class="kv"><span class="k">${p.name}<br><span class="tiny mut">
+      ${money(p.price)} sell &nbsp;&middot;&nbsp; ${money(p.cogs+p.freight)} landed &nbsp;&middot;&nbsp; ${cnt} in pipeline</span></span>
+      <span class="v">${money(profitOf(p.code))}<br><span class="tiny mut">${marginOf(p.code)}% margin</span></span></div>`;
+  });
+  h += `<p class="tiny mut" style="margin:11px 0 0">Profit is net of VAT both ways and assumes
+    ${DUTY===0?'0% duty':(DUTY*100)+'% duty'}. Freight is per package. Excludes broker fees,
+    local delivery and commission. Change the numbers in the packages block of this file
+    and every figure here updates.</p></div>`;
+
+  h += `<div class="sec">Payment status</div><div class="card pad">`;
+  PAY_STAGES.forEach(s=>{
+    const n = all.filter(l=>l.payStage===s.id && l.salesStage==='won').length;
+    if(s.id==='none' && !n) return;
+    h += `<div class="kv"><span class="k">${s.label}</span><span class="v">${n}</span></div>`;
+  });
+  h += `</div>`;
+
+  const flagged = all.filter(l=>l.survey && l.survey.verdict==='flagged');
+  if(flagged.length){
+    h += `<div class="sec">Site surveys needing a decision</div>`;
+    flagged.forEach(l=>h+=leadRow(l,'Flagged'));
+  }
+  return h+'</div>';
+}
+function reached(cur,target){
+  const order = SALES_STAGES.map(s=>s.id);
+  if(cur==='lost'||cur==='dormant') return order.indexOf(target)<=order.indexOf('contacted');
+  return order.indexOf(cur) >= order.indexOf(target);
+}
+
+/* --- MORE --- */
+function viewMore(){
+  const m = Store.mode;
+  const modeText = m==='net' ? 'Shared server. Everyone sees the same data.'
+    : m==='local' ? 'This device only. Deploy to Netlify to share it.'
+    : 'Memory only. Data clears when you close the tab.';
+  return `<div class="wrap">
+  <div class="sec">Shipment broadcast</div>
+  <div class="card pad">
+    <p class="tiny mut" style="margin:0 0 11px">Send once per shipment, to everyone still open.
+      This sits outside the follow-up sequence and does not advance it.</p>
+    <label class="f"><span>Month the shipment lands</span>
+      <input class="in" id="ship-month" placeholder="November"
+        value="${esc(S.data.settings.shipmentMonth||'')}"></label>
+    <button class="btn" onclick="prepBroadcast()">Build the broadcast list</button>
+    ${S.data.settings.lastBroadcast?`<p class="tiny mut" style="margin:10px 0 0">
+      Last broadcast ${fmtDate(S.data.settings.lastBroadcast)}</p>`:''}
+  </div>
+
+  <div class="sec">Your data</div>
+  <div class="card pad">
+    <div class="kv"><span class="k">Where it lives</span><span class="v">${modeText}</span></div>
+    <div class="kv"><span class="k">Leads stored</span><span class="v">${S.data.leads.length}</span></div>
+    <div style="display:flex;gap:9px;margin-top:12px">
+      <button class="btn ghost" style="flex:1;min-width:0" onclick="exportCSV()">Download CSV</button>
+      <button class="btn ghost" style="flex:1;min-width:0" onclick="exportJSON()">Download backup</button>
+    </div>
+    <p class="tiny mut" style="margin:11px 0 0">Take a backup before any update.
+      The JSON file restores everything including the activity log.</p>
+  </div>
+
+  <div class="sec">Package reference</div>
+  ${PKG_LIST.map(p=>`<div class="card pad">
+    <div class="row"><div class="grow"><strong>${p.name}</strong>
+      <div class="tiny mut">Bills ${money(p.billMin)} to ${p.billMax>9999?'up':money(p.billMax)}</div></div>
+      <div class="num">${money(p.price)}</div></div>
+    <hr class="sep">
+    <div class="kv"><span class="k">Panels</span><span class="v">${p.panels}</span></div>
+    <div class="kv"><span class="k">Inverter</span><span class="v">${p.inverter}</span></div>
+    <div class="kv"><span class="k">Battery</span><span class="v">${p.battery}</span></div>
+    <div class="kv"><span class="k">Roof or ground area</span><span class="v">${spaceFor(p.code).arraySqft} sq ft</span></div>
+    <div class="kv"><span class="k">Battery bank</span><span class="v">${spaceFor(p.code).bankW} x ${spaceFor(p.code).bankD} x ${spaceFor(p.code).bankH} in</span></div>
+    <div class="kv"><span class="k">Total equipment area</span><span class="v">${spaceFor(p.code).roomSqft} sq ft</span></div>
+    <div class="kv"><span class="k">Equipment weight</span><span class="v">${spaceFor(p.code).weight.toLocaleString()} lb</span></div>
+    <p class="tiny mut" style="margin:9px 0 0">${p.suits}</p>
+  </div>`).join('')}
+
+  <div class="sec">Reset</div>
+  <div class="card pad">
+    <button class="btn dim" onclick="reseed()">Reload the demo leads</button>
+    <p class="tiny mut" style="margin:10px 0 0">Wipes what is here and puts the seven sample
+      leads back. Use this while you are learning the app, not once real leads are in.</p>
+  </div></div>`;
+}
+window.reseed = () => {
+  if(!confirm('Replace everything with the demo leads?')) return;
+  S.data = seed(); save(); toast('Demo leads restored'); render();
+};
+window.prepBroadcast = () => {
+  S.data.settings.shipmentMonth = $('#ship-month').value.trim();
+  save(); S.tab='broadcast'; render();
+};
+
+function viewBroadcast(){
+  const targets = S.data.leads.filter(l=>
+    !['won','lost'].includes(l.salesStage) && l.phone);
+  return `<div class="wrap">
+    <button class="btn dim sm" onclick="go('more')" style="margin-bottom:12px">Back</button>
+    <div class="sec">Shipment broadcast, ${targets.length} people</div>
+    <div class="card pad"><div class="msg" style="margin:0;border-left:3px solid var(--sun);
+      background:var(--surface2);padding:11px 12px;border-radius:0 8px 8px 0;white-space:pre-wrap">
+      ${esc(fill(BROADCAST,{name:'[first name]'}))}</div></div>
+    ${targets.map(l=>{
+      const sent = (l.broadcasts||[]).includes(S.data.settings.shipmentMonth);
+      return `<div class="fu"><div class="hd"><div class="grow">
+        <div style="font-weight:650">${esc(l.name)}</div>
+        <div class="tiny mut">${esc(l.island)} &middot; ${stageOf(l.salesStage).label}</div>
+      </div>${sent?'<span class="tag ok">Sent</span>':''}</div>
+      <div class="acts"><button class="btn ${sent?'dim':'wa'}"
+        onclick="sendBroadcast('${l.id}')">${sent?'Send again':'Send on WhatsApp'}</button></div></div>`;
+    }).join('')}
+  </div>`;
+}
+window.sendBroadcast = id => {
+  const l = leadById(id);
+  window.open(waLink(l.phone, fill(BROADCAST,l)),'_blank');
+  l.broadcasts = l.broadcasts||[];
+  if(!l.broadcasts.includes(S.data.settings.shipmentMonth))
+    l.broadcasts.push(S.data.settings.shipmentMonth);
+  logTo(l,'whatsapp','Shipment broadcast sent');
+  S.data.settings.lastBroadcast = Date.now();
+  save(); render();
+};
+
+/* --- SNOOP: MY JOBS --- */
+function viewJobs(done){
+  const jobs = visibleLeads().filter(l => done ? !!l.survey : !l.survey);
+  if(!jobs.length) return `<div class="wrap"><div class="empty">
+    <h3>${done?'Nothing finished yet':'No jobs waiting'}</h3>
+    <p>${done?'Surveys you have submitted show up here.':'When Noah sends you a site, it shows up here.'}</p></div></div>`;
+  let h = `<div class="wrap"><div class="sec">${done?'Surveys you have sent in':'Sites to visit'}</div>`;
+  jobs.forEach(l=>{
+    const done = !!l.survey;
+    h += `<button class="lead" onclick="openLead('${l.id}')">
+      <div class="bar" style="background:${done?'var(--ok)':'var(--sun)'}"></div>
+      <div class="body"><div class="nm">${esc(l.name)}</div>
+        <div class="meta trunc">${esc(l.address||'')}${l.address?', ':''}${esc(l.island)}</div>
+        <div class="meta">${pkgName(l.package)}</div></div>
+      <div class="rt">${done
+        ? (l.survey.verdict==='flagged'?'<span class="tag alert">Flagged</span>':'<span class="tag ok">Done</span>')
+        : '<span class="tag sun">To visit</span>'}</div></button>`;
+  });
+  return h+'</div>';
+}
+
+/* --- ADD LEAD --- */
+window.openNew = () => { S.open='new'; render(); };
+function viewNewLead(){
+  return `<div class="sheet"><div class="shead">
+    <button class="x" onclick="closeSheet()">&times;</button><h2>New lead</h2></div>
+  <div class="wrap">
+    <div class="card pad">
+    <label class="f"><span>Name</span><input class="in" id="n-name" autocomplete="off"></label>
+    <label class="f"><span>WhatsApp number, with country code</span>
+      <input class="in" id="n-phone" type="tel" inputmode="tel" placeholder="1242..."></label>
+    <div class="two">
+      <label class="f"><span>Light bill, monthly</span>
+        <input class="in" id="n-bill" type="number" inputmode="numeric"
+          oninput="previewPkg()" placeholder="400"></label>
+      <label class="f"><span>Island</span><select class="in" id="n-island">
+        ${ISLANDS.map(i=>`<option>${i}</option>`).join('')}</select></label>
+    </div>
+    <div class="card pad" id="pkg-preview" style="background:var(--teal-l);border-color:var(--teal);
+      margin-bottom:11px"><span class="tiny">Type a bill amount and the package matches itself.</span></div>
+    <div class="two">
+      <label class="f"><span>Came from</span><select class="in" id="n-source">
+        ${SOURCES.map(s=>`<option>${s}</option>`).join('')}</select></label>
+      <label class="f"><span>Home or business</span><select class="in" id="n-type">
+        <option value="home">Home</option><option value="business">Business</option></select></label>
+    </div>
+    <label class="f"><span>Address</span><input class="in" id="n-address"></label>
+    <label class="f"><span>Email, if you have it</span>
+      <input class="in" id="n-email" type="email" inputmode="email"></label>
+    <label class="f"><span>What they actually want</span>
+      <textarea class="in" id="n-obj" placeholder="One line is enough"></textarea></label>
+    <button class="btn" onclick="saveNew()">Save lead and start follow-ups</button>
+    </div>
+  </div></div>`;
+}
+window.previewPkg = () => {
+  const b = $('#n-bill').value, c = matchPackage(b), p = PACKAGES[c];
+  $('#pkg-preview').innerHTML = p
+    ? `<strong>${p.name}</strong> &nbsp; <span class="num">${money(p.price)}</span>
+       <div class="tiny" style="margin-top:2px">${p.panels}, ${p.inverter}, ${p.battery}</div>`
+    : '<span class="tiny">Type a bill amount and the package matches itself.</span>';
+};
+window.saveNew = () => {
+  const name = $('#n-name').value.trim(), phone = $('#n-phone').value.trim();
+  if(!name){ toast('A name at least'); return; }
+  const l = addLead({name, phone, bill:$('#n-bill').value,
+    island:$('#n-island').value, source:$('#n-source').value,
+    propertyType:$('#n-type').value, address:$('#n-address').value.trim(),
+    email:$('#n-email').value.trim(), objective:$('#n-obj').value.trim()});
+  S.open = l.id; toast('Lead saved'); render();
+};
+
+/* --- LEAD DETAIL --- */
+window.openLead = id => { S.open=id; window.scrollTo(0,0); render(); };
+window.closeSheet = () => { S.open=null; render(); };
+
+function viewLead(l){
+  const p = PACKAGES[l.package];
+  const fu = dueFollowUp(l);
+  const snoop = S.role==='snoop';
+
+  let h = `<div class="sheet"><div class="shead">
+    <button class="x" onclick="closeSheet()">&times;</button>
+    <h2 class="trunc">${esc(l.name)}</h2>
+    ${l.phone?`<a href="tel:+${esc(l.phone)}" style="color:#fff;font-size:13px;font-weight:600">Call</a>`:''}
+  </div><div class="wrap">`;
+
+  // contact strip
+  h += `<div class="card pad">
+    <div class="kv"><span class="k">WhatsApp</span><span class="v">
+      ${l.phone?`<a href="${waLink(l.phone,'Hi '+(l.name||'').split(' ')[0]+',')}" target="_blank">+${esc(l.phone)}</a>`:'Not set'}</span></div>
+    <div class="kv"><span class="k">Where</span><span class="v">${esc(l.address||'-')}, ${esc(l.island)}</span></div>
+    ${!snoop?`<div class="kv"><span class="k">Light bill</span><span class="v">${l.bill?money(l.bill)+' a month':'Not given'}</span></div>
+    <div class="kv"><span class="k">Came from</span><span class="v">${esc(l.source)}, ${l.propertyType==='business'?'business':'home'}</span></div>`:''}
+    ${l.email?`<div class="kv"><span class="k">Email</span><span class="v trunc">${esc(l.email)}</span></div>`:''}
+    ${l.objective?`<p class="tiny" style="margin:10px 0 0;color:var(--ink2)">${esc(l.objective)}</p>`:''}
+  </div>`;
+
+  // system spec
+  if(p){
+    h += `<div class="sec">System</div><div class="card pad">
+      <div class="row"><div class="grow"><strong>${p.name}</strong>
+        <div class="tiny mut">${p.kwh} kWh a month</div></div>
+        <div class="num" style="font-size:18px">${money(p.price)}</div></div>
+      <hr class="sep">
+      <div class="kv"><span class="k">Panels</span><span class="v">${p.panels}</span></div>
+      <div class="kv"><span class="k">Inverter</span><span class="v">${p.inverter}</span></div>
+      <div class="kv"><span class="k">Battery</span><span class="v">${p.battery}</span></div>
+      <div class="kv"><span class="k">Mount</span><span class="v">${p.mount}</span></div>
+      ${S.role==='ceo'||S.role==='noah'?`<div class="kv"><span class="k">Profit on this deal</span>
+        <span class="v" style="color:var(--ok)">${money(profitOf(p.code))}, ${marginOf(p.code)}%</span></div>`:''}
+      <p class="tiny mut" style="margin:9px 0 0">Install quoted separately and paid direct to the
+        installation company. Price includes VAT, duty and freight to your island, not delivery to the door.</p>
+    </div>` + spaceBlock(p.code, snoop?'Check this fits on site':'Space this system needs');
+  }
+
+  if(snoop){ h += surveyBlock(l) + '</div></div>'; return h; }
+
+  // stages
+  h += `<div class="sec">Sales stage</div><div class="card pad"><div class="stage">
+    ${SALES_STAGES.map(s=>`<button class="${s.id==='won'?'won':s.id==='lost'?'lost':''} ${l.salesStage===s.id?'on':''}"
+      onclick="setStage(leadById('${l.id}'),'${s.id}')">${s.label}</button>`).join('')}
+  </div>`;
+  if(l.salesStage==='lost'){
+    h += `<label class="f" style="margin-top:11px"><span>Why it was lost</span>
+      <input class="in" value="${esc(l.lostReason)}"
+        onchange="upd('${l.id}','lostReason',this.value)"></label>`;
+  }
+  h += `</div>`;
+
+  h += `<div class="sec">Money and delivery</div><div class="card pad">
+    <label class="f"><span>Payment</span><select class="in"
+      onchange="upd('${l.id}','payStage',this.value)">
+      ${PAY_STAGES.map(s=>`<option value="${s.id}" ${l.payStage===s.id?'selected':''}>${s.label}</option>`).join('')}
+    </select></label>
+    <label class="f" style="margin-bottom:0"><span>Fulfilment</span><select class="in"
+      onchange="upd('${l.id}','fulStage',this.value)">
+      ${FUL_STAGES.map(s=>`<option value="${s.id}" ${l.fulStage===s.id?'selected':''}>${s.label}</option>`).join('')}
+    </select></label></div>`;
+
+  // follow-up state
+  h += `<div class="sec">Follow-up</div><div class="card pad">`;
+  if(l.followUp.active){
+    const nextStep = SEQUENCE[l.followUp.step];
+    h += `<div class="kv"><span class="k">Sequence</span><span class="v" style="color:var(--ok)">Running</span></div>
+      <div class="kv"><span class="k">Sent so far</span><span class="v">${l.followUp.step} of ${SEQUENCE.length}</span></div>
+      <div class="kv"><span class="k">${fu?'Due now':'Next message'}</span>
+        <span class="v">${fu?esc(fu.label):(nextStep?esc(nextStep.label)+', day '+nextStep.day:'Quarterly')}</span></div>`;
+    if(fu){
+      h += `<div class="msg" style="margin:12px 0 0;border-radius:0 8px 8px 0">${esc(fu.body)}</div>
+        <div style="display:flex;gap:8px;margin-top:11px">
+        <button class="btn wa" onclick="doSend('${l.id}',${fu.step},${!!fu.quarterly})">Send on WhatsApp</button>
+        <button class="btn dim sm" onclick="doReplied('${l.id}')">They replied</button></div>`;
+    }
+    h += `<button class="btn dim sm" style="margin-top:11px;width:100%"
+      onclick="declined(leadById('${l.id}'));render()">They said no, stop everything</button>`;
+  } else {
+    h += `<div class="kv"><span class="k">Sequence</span><span class="v mut">Not running</span></div>
+      <button class="btn ghost" style="margin-top:11px" onclick="startSeq('${l.id}')">Start the sequence</button>`;
+  }
+  h += `</div>`;
+
+  // next action
+  h += `<div class="sec">Your next move</div><div class="card pad">
+    <label class="f"><span>What you are doing next</span>
+      <input class="in" value="${esc(l.nextAction)}" placeholder="Call about the ground mount"
+        onchange="upd('${l.id}','nextAction',this.value)"></label>
+    <label class="f" style="margin-bottom:0"><span>When</span>
+      <input class="in" type="date" value="${esc(l.nextActionDate)}"
+        onchange="upd('${l.id}','nextActionDate',this.value)"></label></div>`;
+
+  // quote packet
+  h += `<div class="sec">Quote</div><div class="card pad">`;
+  if(l.quote){
+    h += `<div class="kv"><span class="k">Number</span><span class="v">${esc(l.quote.number)}</span></div>
+      <div class="kv"><span class="k">Total</span><span class="v">${money(l.quote.total)}</span></div>
+      <div class="kv"><span class="k">Sent</span><span class="v">${esc(l.quote.date)}</span></div>`;
+  }
+  h += `<p class="tiny mut" style="margin:${l.quote?'10px':'0'} 0 10px">
+      Copy this straight into a message to Zach. It has everything he needs to raise the estimate.</p>
+    <button class="btn ghost" onclick="copyPacket('${l.id}')">Copy the quote packet</button>
+    <div style="display:flex;gap:9px;margin-top:9px">
+      <input class="in" placeholder="Quote number" id="q-num-${l.id}"
+        value="${esc(l.quote?l.quote.number:'')}" style="flex:1 1 0;min-width:0">
+      <input class="in" placeholder="Total" type="number" inputmode="numeric" id="q-tot-${l.id}"
+        value="${l.quote?l.quote.total:''}" style="flex:0 0 104px;min-width:0">
+    </div>
+    <button class="btn dim sm" style="width:100%;margin-top:9px"
+      onclick="saveQuote('${l.id}')">Record the quote</button></div>`;
+
+  // installer assignment + survey
+  h += `<div class="sec">Site visit</div><div class="card pad">
+    <div class="kv"><span class="k">Sent to Snoop</span>
+      <span class="v">${l.assigned?'Yes':'Not yet'}</span></div>
+    <button class="btn ${l.assigned?'dim':'ghost'}" style="margin-top:11px"
+      onclick="toggleAssign('${l.id}')">${l.assigned?'Take it back':'Send this site to Snoop'}</button></div>`;
+  if(l.survey) h += surveyReadout(l);
+
+  // log
+  h += `<div class="sec">History</div><div class="card pad">
+    <label class="f"><span>Add a note</span>
+      <textarea class="in" id="note-${l.id}" placeholder="What happened"></textarea></label>
+    <button class="btn dim sm" style="width:100%" onclick="addNote('${l.id}')">Save note</button>
+    <hr class="sep"><div class="log">
+    ${l.log.map(e=>`<div class="e"><div>${esc(e.body)}</div>
+      <div class="w">${esc(e.by)} &middot; ${fmtDate(e.at)}</div></div>`).join('')
+      || '<span class="tiny mut">Nothing logged yet.</span>'}
+    </div></div>`;
+
+  return h+'</div></div>';
+}
+window.upd = (id,k,v) => { const l=leadById(id); l[k]=v; l.updatedAt=Date.now(); save(); render(); };
+window.startSeq = id => { const l=leadById(id);
+  l.followUp={active:true,step:0,startedAt:Date.now(),lastSentAt:null};
+  logTo(l,'note','Follow-up sequence started'); save(); render(); };
+window.addNote = id => { const l=leadById(id); const v=$('#note-'+id).value.trim();
+  if(!v) return; logTo(l,'note',v); save(); toast('Noted'); render(); };
+window.saveQuote = id => { const l=leadById(id);
+  const num=$('#q-num-'+id).value.trim(), tot=Number($('#q-tot-'+id).value)||0;
+  if(!num){ toast('Needs a quote number'); return; }
+  l.quote={number:num,total:tot,date:new Date().toISOString().slice(0,10),status:'sent'};
+  logTo(l,'quote','Quote '+num+' recorded, '+money(tot));
+  if(l.salesStage==='est_req'||l.salesStage==='call_done') setStage(l,'est_sent');
+  save(); toast('Quote recorded'); render(); };
+window.toggleAssign = id => { const l=leadById(id); l.assigned=!l.assigned;
+  logTo(l,'note', l.assigned?'Site sent to Snoop':'Taken back from Snoop');
+  if(l.assigned && l.salesStage==='visit_req') {}
+  save(); render(); };
+window.copyPacket = id => {
+  const l=leadById(id), p=PACKAGES[l.package];
+  const t = `QUOTE REQUEST\n`+
+    `Name: ${l.name}\nPhone: +${l.phone}\nEmail: ${l.email||'not given'}\n`+
+    `Address: ${l.address||'not given'}\nIsland: ${l.island}\n`+
+    `Property: ${l.propertyType==='business'?'Business':'Home'}\n`+
+    `Light bill: ${l.bill?money(l.bill)+' a month':'not given'}\n`+
+    `System: ${p?p.name:'to be decided'}${p?' at '+money(p.price):''}\n`+
+    (p?`Spec: ${p.panels}, ${p.inverter}, ${p.battery}\n`:'')+
+    `Notes: ${l.objective||l.notes||'none'}`;
+  navigator.clipboard ? navigator.clipboard.writeText(t).then(()=>toast('Packet copied'))
+    : prompt('Copy this',t);
+};
+
+/* --- SURVEY --- */
+function surveyBlock(l){
+  const s = l.survey || {};
+  return `<div class="sec">Site survey</div><div class="card pad">
+    <div class="two">
+      <label class="f"><span>Visit date</span><input class="in" type="date" id="s-date" value="${esc(s.visitDate||'')}"></label>
+      <label class="f"><span>Roof type</span><select class="in" id="s-roof">
+        ${['Shingle','Metal or tin','Flat cement','Ground mount needed','Other']
+          .map(r=>`<option ${s.roofType===r?'selected':''}>${r}</option>`).join('')}</select></label>
+    </div>
+    <div class="two">
+      <label class="f"><span>Usable area, sq ft</span><input class="in" type="number" id="s-area" value="${esc(s.usableArea||'')}"></label>
+      <label class="f"><span>Panels that fit</span><input class="in" type="number" id="s-panels" value="${esc(s.panelsFit||'')}"></label>
+    </div>
+    <label class="f"><span>Where the batteries go</span>
+      <input class="in" id="s-batt" value="${esc(s.batteryLoc||'')}" placeholder="Back store room, north wall"></label>
+    <label class="f"><span>Wire run to the panel, feet</span>
+      <input class="in" type="number" id="s-wire" value="${esc(s.wireRun||'')}"></label>
+    <hr class="sep">
+    <label class="f"><span>Roof structure or build out needed</span>
+      <select class="in" id="s-roofb"><option value="no" ${!s.roofBuildout?'selected':''}>No</option>
+      <option value="yes" ${s.roofBuildout?'selected':''}>Yes</option></select></label>
+    <label class="f"><span>Notes on that</span><textarea class="in" id="s-roofn">${esc(s.roofNotes||'')}</textarea></label>
+    <label class="f"><span>Battery enclosure or room needed</span>
+      <select class="in" id="s-enc"><option value="no" ${!s.enclosure?'selected':''}>No</option>
+      <option value="yes" ${s.enclosure?'selected':''}>Yes</option></select></label>
+    <label class="f"><span>Notes on that</span><textarea class="in" id="s-encn">${esc(s.enclosureNotes||'')}</textarea></label>
+    <hr class="sep">
+    <label class="f"><span>Your install quote</span>
+      <input class="in" type="number" id="s-quote" value="${esc(s.installQuote||'')}" placeholder="Dollars"></label>
+    <label class="f"><span>Does the system size work</span>
+      <select class="in" id="s-verdict">
+        <option value="confirmed" ${s.verdict==='confirmed'?'selected':''}>Yes, it works as specified</option>
+        <option value="flagged" ${s.verdict==='flagged'?'selected':''}>No, there is a problem</option>
+      </select></label>
+    <label class="f"><span>If there is a problem, what would you do instead</span>
+      <textarea class="in" id="s-rec">${esc(s.recommend||'')}</textarea></label>
+    <label class="f"><span>Anything else Noah should know</span>
+      <textarea class="in" id="s-com">${esc(s.comments||'')}</textarea></label>
+    <button class="btn" onclick="saveSurvey('${l.id}')">Submit the survey</button>
+  </div>`;
+}
+window.saveSurvey = id => {
+  const l = leadById(id);
+  l.survey = {
+    visitDate:$('#s-date').value, roofType:$('#s-roof').value,
+    usableArea:$('#s-area').value, panelsFit:$('#s-panels').value,
+    batteryLoc:$('#s-batt').value, wireRun:$('#s-wire').value,
+    roofBuildout:$('#s-roofb').value==='yes', roofNotes:$('#s-roofn').value,
+    enclosure:$('#s-enc').value==='yes', enclosureNotes:$('#s-encn').value,
+    installQuote:$('#s-quote').value, verdict:$('#s-verdict').value,
+    recommend:$('#s-rec').value, comments:$('#s-com').value,
+    by:ROLES[S.role].label, at:Date.now()
+  };
+  logTo(l,'survey','Site survey submitted. System size '+
+    (l.survey.verdict==='flagged'?'FLAGGED':'confirmed')+'.');
+  save(); toast('Survey submitted'); render();
+};
+function surveyReadout(l){
+  const s = l.survey;
+  return `<div class="card pad" style="border-color:${s.verdict==='flagged'?'var(--alert)':'var(--ok)'}">
+    <div class="row" style="margin-bottom:8px">
+      <strong class="grow">Snoop's survey, ${fmtDate(s.at)}</strong>
+      <span class="tag ${s.verdict==='flagged'?'alert':'ok'}">
+        ${s.verdict==='flagged'?'Size flagged':'Size confirmed'}</span></div>
+    <div class="kv"><span class="k">Roof</span><span class="v">${esc(s.roofType)}</span></div>
+    <div class="kv"><span class="k">Usable area</span><span class="v">${esc(s.usableArea)} sq ft</span></div>
+    <div class="kv"><span class="k">Panels that fit</span><span class="v">${esc(s.panelsFit)}</span></div>
+    <div class="kv"><span class="k">Batteries</span><span class="v">${esc(s.batteryLoc)}</span></div>
+    <div class="kv"><span class="k">Wire run</span><span class="v">${esc(s.wireRun)} ft</span></div>
+    <div class="kv"><span class="k">Roof build out</span><span class="v">${s.roofBuildout?'Yes':'No'}</span></div>
+    <div class="kv"><span class="k">Battery enclosure</span><span class="v">${s.enclosure?'Yes':'No'}</span></div>
+    <div class="kv"><span class="k">His install quote</span><span class="v">${money(s.installQuote)}</span></div>
+    ${s.recommend?`<p class="tiny" style="margin:10px 0 0"><strong>He suggests:</strong> ${esc(s.recommend)}</p>`:''}
+    ${s.comments?`<p class="tiny" style="margin:6px 0 0;color:var(--ink2)">${esc(s.comments)}</p>`:''}
+    ${s.roofNotes?`<p class="tiny mut" style="margin:6px 0 0">Roof: ${esc(s.roofNotes)}</p>`:''}
+    ${s.enclosureNotes?`<p class="tiny mut" style="margin:4px 0 0">Enclosure: ${esc(s.enclosureNotes)}</p>`:''}
+  </div>`;
+}
+
+/* ---------- 8. RENDER ----------------------------------------------------- */
+function render(){
+  const app = $('#app');
+  if(!S.role){ app.innerHTML = viewGate(); return; }
+  let body = '';
+  if(S.open==='new') body = viewNewLead();
+  else if(S.open){ const l = leadById(S.open); body = l ? viewLead(l) : ''; if(!l) S.open=null; }
+  else {
+    const v = {today:viewToday, pipeline:viewPipeline, leads:viewLeads, money:viewMoney,
+      more:viewMore, jobs:viewJobs, jobsdone:()=>viewJobs(true),
+      broadcast:viewBroadcast}[S.tab] || viewToday;
+    body = v();
+  }
+  app.innerHTML = viewTop() + body + viewNav() +
+    (S.toast?`<div class="toast">${esc(S.toast)}</div>`:'');
+}
+
+/* ---------- 9. BOOT ------------------------------------------------------- */
+(async function boot(){
+  const loaded = await Store.load();
+  S.data = loaded && loaded.leads ? loaded : seed();
+  if(!S.data.settings) S.data.settings = {shipmentMonth:'',lastBroadcast:null};
+  try{ const r = sessionStorage.getItem('ipb_role'); if(r && ROLES[r]) { S.role=r; S.tab = r==='snoop'?'jobs':'today'; } }catch(e){}
+  if(!loaded) save();
+  render();
+})();
+</script>
+</body>
+</html>
