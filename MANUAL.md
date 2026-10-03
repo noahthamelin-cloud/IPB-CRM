@@ -25,7 +25,7 @@ Nobody outside the company can see it. It is protected by a passcode.
 
 ## 2. Who uses it
 
-There are three people, and each sees a different version of the same system.
+Two people log in. Installers are handled with a document rather than an account.
 
 **Noah, sales.** Sees everything. Adds leads, moves them along, sends follow-ups,
 records quotes, sends jobs to the installer.
@@ -33,12 +33,12 @@ records quotes, sends jobs to the installer.
 **Zach, CEO.** Sees everything Noah sees, plus the money screen. Mainly here for the
 numbers and to raise quotes.
 
-**Snoop, install.** Sees only the jobs that have been pushed to him. On those jobs he
-gets the customer's name, number, address, the system spec and the price. He fills in
-the site survey and his own install quote. He cannot see the rest of the pipeline.
+There is no longer a separate installer login. Instead, any lead can produce a branded
+**installer spec sheet** as a PDF, which you send to whichever installer is pricing the
+job, or hand to the client so they can price it with their own contractor. See section 4.
 
 Passcodes are set in the file `public/index.html`, in the block marked `ROLES`, near the
-top of the script. The starting codes are 2242 for Noah, 1111 for Zach, 7777 for Snoop.
+top of the script. The starting codes are 2242 for Noah and 1111 for Zach.
 **Change these before anyone real logs in.**
 
 ---
@@ -108,8 +108,10 @@ deliberately independent:
 - **Sales stage** is the human relationship: new, contacted, responded, call booked,
   call completed, estimate requested, estimate sent, site visit requested, site visit
   completed, closed won, closed lost, dormant.
-- **Payment** is the money: nothing yet, deposit invoiced, 50% in, 75% in, paid in full.
-  The 50% deposit is what secures the customer's allocation on a shipment.
+- **Payment** is the money: nothing yet, awaiting deposit, 50% deposit received, paid in
+  full. This matches the signed sales contract, which is a 50/50 split: 50% on signature
+  authorises procurement and holds the allocation, 50% when the equipment reaches the
+  destination, cleared before release for collection.
 - **Fulfilment** is the equipment: ordered, shipped, landed, delivered, install
   scheduled, install started, install complete, final invoice, final payment.
 
@@ -212,9 +214,41 @@ button. Anyone already sent this shipment's message is marked, so nobody gets it
 
 ## 6. The Money screen
 
-Four numbers at the top: profit closed, profit in the pipeline, revenue closed, revenue
-open. Below that, where leads fall out of the funnel, and the closing ratios. These are
-the numbers to show investors.
+Six numbers at the top, and the first two matter most:
+
+- **Cash collected.** Money actually received, counting a deposit as half the order.
+- **Invoiced, still owed.** What has been contracted but not yet banked.
+- **Profit contracted** and **profit still in the pipeline.**
+- **Revenue contracted** and **revenue open.**
+
+A signed deal with no deposit is not money, so the two are kept apart deliberately. If
+any signed deal has no deposit in, an amber panel names those customers. Nothing is
+ordered and no allocation is held until the 50% lands.
+
+Below that, where leads fall out of the funnel, and the closing ratios. Those are the
+numbers to show investors.
+
+### Contract figures
+
+Every lead with a package shows the exact sales order breakdown, matching the signed
+contract line for line. The rule, confirmed against five IPB documents:
+
+```
+VAT on parts   = 10% of the equipment base
+VAT on landed  = 10% of (VAT on parts + freight)
+Total          = base + VAT on parts + freight + VAT on landed
+Deposit        = half the total
+```
+
+On a PowerUP 2400 that gives base $12,567.00, VAT on parts $1,256.70, freight $1,500.00,
+VAT on landed $275.67, total $15,599.37, and a deposit of $7,799.69. Those are the exact
+figures on Helen's signed contract.
+
+Where an estimate includes install labour, that line is excluded from VAT on parts. The
+Midway commercial job works this way.
+
+"Copy the contract figures" puts the whole block on your clipboard, ready to paste
+straight into the sales order.
 
 ### How profit is worked out
 
@@ -224,12 +258,12 @@ switch near the top of the script, `VAT_REGISTERED`. It is currently set to `tru
 **If IPB is VAT registered** (the current setting):
 
 ```
-profit = (selling price ÷ 1.10) − (cost of goods + duty + freight)
+profit = (equipment base + freight charged) − (cost of goods + duty + freight paid)
 ```
 
-The selling price is divided by 1.10 because the 10% VAT inside it gets handed to the
-government. The VAT paid on the import is not counted as a cost, because a registered
-business claims it back.
+The VAT charged on the invoice is handed to the government, so what IPB keeps is the
+base plus the freight it billed. The VAT paid on the import is not counted as a cost,
+because a registered business claims it back.
 
 **If IPB is not VAT registered**, set `VAT_REGISTERED` to `false`. Then:
 
@@ -248,10 +282,15 @@ Duty on solar is currently 0%. Cost of goods comes from the Kevolt price list da
 
 | Package | Sells for | Costs landed | Profit | Margin |
 |---|---|---|---|---|
-| PowerUP 1200 | $11,599 | $5,065 | $5,480 | 52% |
-| PowerUP 2400 | $15,599 | $7,404 | $6,777 | 48% |
-| PowerUP 4400 | $21,999 | $10,146 | $9,853 | 49% |
-| PowerUP Max | $45,000 | $18,692 | $22,217 | 54% |
+| PowerUP 1200 | $11,599.00 | $5,065 | $5,398 | 52% |
+| PowerUP 2400 | $15,599.37 | $7,404 | $6,663 | 47% |
+| PowerUP 4400 | $21,998.99 | $10,146 | $9,686 | 49% |
+| PowerUP Max | $45,000.00 | $18,692 | $21,862 | 54% |
+
+These are slightly lower than earlier versions of this manual, and they are now correct.
+The old figures divided the invoice by 1.10, but IPB's VAT is charged on the parts and
+then again on the landed costs, so it is not a flat 10% of the total. What IPB keeps is
+the equipment base plus the freight it charged, which is what the calculation now uses.
 
 Those figures are on the VAT registered setting.
 
@@ -301,10 +340,23 @@ or ask whoever maintains the system. Keep the backups somewhere that is not this
 
 ---
 
-## 8. Connecting the website form
+## 8. Connecting the forms
 
-Right now every WhatsApp and Messenger lead is typed in by hand. The JotForm on the
-website can feed itself in automatically. The code is already written and deployed.
+Two JotForms feed the CRM, and **they both point at the same web address.** The function
+works out which is which on its own.
+
+- The **website form** that customers fill in. A new phone number creates a new lead.
+- The **internal form** you fill in yourself to update a customer. A phone number that
+  already exists updates that lead instead of creating a duplicate.
+
+Matching is on the last seven digits of the phone number, so `2428248759` and
+`+1 (242) 824-8759` are treated as the same person. A field the form did not answer is
+left alone, so a short update form cannot wipe out details you already have.
+
+The internal form can also set the sales stage, payment status, fulfilment status, next
+action and next action date. Write the answers the way they appear in the app, for
+example "Estimate sent", "50% deposit in", "Shipped". Package can be written as "2400",
+"Level 2400" or "Level two".
 
 1. Build your JotForm with questions that include the words: name, phone or whatsapp,
    email, island, address, bill, and a message box.
@@ -315,9 +367,10 @@ website can feed itself in automatically. The code is already written and deploy
 https://YOUR-SITE.netlify.app/.netlify/functions/jotform-intake
 ```
 
-4. Save and send yourself a test submission. It should appear at the top of the Leads
-   screen within a few seconds, marked source JotForm, with its follow-up sequence
-   already running.
+4. Repeat for the internal form. Same address, nothing different to configure.
+5. Send yourself a test submission from each. A new number should appear at the top of
+   the Leads screen within a few seconds. An existing number should update that lead and
+   add a line to its history reading "Updated from the internal form".
 
 If your question wording is different, open `netlify/functions/jotform-intake.js` and
 edit the `MAP` block at the top. It matches on words appearing anywhere in a question,
@@ -337,11 +390,12 @@ Being honest about the edges so nobody goes looking for something that is not th
 - It does not send messages by itself. It writes them and opens WhatsApp. You tap send.
   This is on purpose as well as a technical limit, because you should read every message
   before it goes.
-- Snoop's restriction is enforced in the screen, not in the database. He sees only his
-  jobs, but a determined person with developer tools could read further. This was an
-  accepted trade for version 1. Moving the data to a proper database with real
-  permissions is the version 2 fix.
-- There are no photo uploads on site surveys yet.
+- Passcodes live in the page source, so anyone with developer tools open can read them.
+  They keep out casual visitors, not a determined one. Moving to a proper database with
+  real accounts is the version 2 fix.
+- There are no photo uploads on site findings yet.
+- The spec sheet is produced by printing to PDF rather than generating a file directly.
+  This keeps the app dependency free and gives full control over how it looks.
 - There is no automatic ad spend to closed deal reporting yet.
 
 ---

@@ -183,6 +183,58 @@ textarea.in{min-height:76px;resize:vertical;font-size:15px}
 .empty{text-align:center;padding:38px 20px;color:var(--muted)}
 .empty p{margin:6px 0 16px;font-size:14px}
 hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
+
+/* ---------- installer spec sheet ---------- */
+.doc{background:#fff;max-width:760px;margin:0 auto;padding:0 0 40px;color:#1a1a1a;
+  font-size:13px;line-height:1.5}
+.doc .goldbar{height:9px;background:#E8930C}
+.doc .dhead{display:flex;gap:16px;align-items:flex-start;padding:22px 26px 16px}
+.doc .brand{flex:1}
+.doc .brand .nm{font-size:20px;font-weight:800;letter-spacing:-.02em;color:#0A7D8C;line-height:1}
+.doc .brand .nm b{color:#1a1a1a}
+.doc .brand .sub{font-size:9.5px;letter-spacing:.34em;color:#0A7D8C;font-weight:700;margin-top:3px}
+.doc .brand .tagline{font-size:9px;letter-spacing:.14em;color:#6b7b80;margin-top:7px;font-weight:600}
+.doc .dref{text-align:right;flex:none}
+.doc .dref h3{color:#0A7D8C;font-size:19px;letter-spacing:-.02em}
+.doc .dref .r{font-size:11px;font-weight:700;margin-top:2px}
+.doc .dref .d{font-size:11px;color:#6b7b80}
+.doc .band{background:#E6F2F4;color:#0A7D8C;font-weight:700;font-size:11px;letter-spacing:.06em;
+  padding:7px 26px;margin-top:14px}
+.doc .dbody{padding:12px 26px 0}
+.doc table{width:100%;border-collapse:collapse;font-size:12.5px}
+.doc th{background:#0A7D8C;color:#fff;text-align:left;padding:7px 9px;font-size:10.5px;
+  letter-spacing:.04em;font-weight:700}
+.doc td{padding:7px 9px;border-bottom:1px solid #E4EBEC;vertical-align:top}
+.doc td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.doc .pair{display:flex;gap:18px;font-size:12.5px;padding:3px 0}
+.doc .pair .pk{width:168px;flex:none;color:#6b7b80}
+.doc .pair .pv{flex:1;font-weight:600}
+.doc .callout{border-left:3px solid #E8930C;background:#FDF6EA;padding:10px 13px;margin-top:11px;
+  font-size:12px}
+.doc .sign{border:1px solid #CBD9DB;border-radius:5px;padding:13px;margin-top:12px}
+.doc .line{border-bottom:1px solid #9FB4B8;height:26px;margin-top:13px;position:relative}
+.doc .line span{position:absolute;bottom:3px;left:0;font-size:9.5px;color:#6b7b80;
+  letter-spacing:.05em;font-weight:600}
+.doc .fine{font-size:10px;color:#6b7b80;line-height:1.55;margin-top:16px}
+.doc .dfoot{border-top:2px solid #0A7D8C;margin:22px 26px 0;padding-top:9px;
+  font-size:9.5px;color:#6b7b80;display:flex;justify-content:space-between;gap:12px}
+.printbar{position:sticky;top:0;z-index:5;background:var(--teal-d);padding:10px 14px;
+  display:flex;gap:9px;align-items:center}
+.printbar .btn{width:auto;padding:9px 14px;font-size:14px}
+
+@media print{
+  @page{size:letter;margin:11mm}
+  body{background:#fff;padding:0!important}
+  .top,.nav,.printbar,.toast{display:none!important}
+  .doc{max-width:none;padding:0;font-size:11.5px}
+  .doc .dhead{padding:0 0 12px}
+  .doc .band{padding-left:0;padding-right:0;margin-top:11px;background:none;
+    border-bottom:2px solid #0A7D8C}
+  .doc .dbody{padding:9px 0 0}
+  .doc .dfoot{margin:16px 0 0}
+  .doc .goldbar{height:6px}
+  .doc table,.doc .sign{break-inside:avoid}
+}
 </style>
 </head>
 <body>
@@ -308,25 +360,25 @@ function spaceFor(code){
 }
 
 const PACKAGES = {
-  p1200:{ code:'p1200', name:'PowerUP 1200', price:11599, cogs:3465, freight:1600,
+  p1200:{ code:'p1200', name:'PowerUP 1200', price:11599, base:8963.06,  freightCharged:1500, cogs:3465, freight:1600,
     billMin:100, billMax:300, kwh:1200,
     panels:'8 x 620W', inverter:'1 x 10kW', battery:'1 x 16kWh',
     mount:'Roof mount, 8 panels', wire:'100ft PV wire', combiner:'1 x 2-in/2-out',
     panelQty:8, batteryQty:1, invModel:'inv10', invQty:1,
     suits:'2-3 bed, 2-3 mini splits, gas stove and dryer' },
-  p2400:{ code:'p2400', name:'PowerUP 2400', price:15599, cogs:5804, freight:1600,
+  p2400:{ code:'p2400', name:'PowerUP 2400', price:15599, base:12567.00, freightCharged:1500, cogs:5804, freight:1600,
     billMin:400, billMax:600, kwh:2400,
     panels:'16 x 620W', inverter:'1 x 10kW', battery:'2 x 16kWh',
     mount:'Roof mount, 16 panels', wire:'200ft PV wire', combiner:'1 x 2-in/2-out',
     panelQty:16, batteryQty:2, invModel:'inv10', invQty:1,
     suits:'2-3 bed with electric stove, dryer, dishwasher, water heater' },
-  p4400:{ code:'p4400', name:'PowerUP 4400', price:21999, cogs:8546, freight:1600,
+  p4400:{ code:'p4400', name:'PowerUP 4400', price:21999, base:18332.43, freightCharged:1500, cogs:8546, freight:1600,
     billMin:800, billMax:1000, kwh:4400,
     panels:'30 x 620W', inverter:'1 x 15kW', battery:'2 x 16kWh',
     mount:'Roof mount, 30 panels', wire:'600ft PV wire', combiner:'1 x 3-in/3-out',
     panelQty:30, batteryQty:2, invModel:'inv15', invQty:1,
     suits:'3-4 bed, 4-5 mini splits, full electric. Third battery often worth quoting.' },
-  pmax:{ code:'pmax', name:'PowerUP Max', price:45000, cogs:17092, freight:1600,
+  pmax:{ code:'pmax', name:'PowerUP Max', price:45000, base:39054.05, freightCharged:1500, cogs:17092, freight:1600,
     billMin:1500, billMax:99999, kwh:8800,
     panels:'60 x 620W', inverter:'2 x 15kW', battery:'4 x 16kWh',
     mount:'Ground or roof, 60 panels', wire:'1200ft PV wire', combiner:'2 x 3-in/3-out',
@@ -336,6 +388,23 @@ const PACKAGES = {
 const PKG_LIST = Object.values(PACKAGES);
 
 // Profit, net of VAT both directions. Assumes IPB reclaims input VAT.
+/* The quote breakdown, exactly as it appears on an IPB sales contract.
+   Rule confirmed against five documents including Helen's signed contract:
+     VAT on parts  = 10% of the equipment base
+     VAT on landed = 10% of (VAT on parts + freight)
+   Install labour, where it appears, is excluded from VAT on parts. */
+function quoteOf(code, addons){
+  const p = PACKAGES[code]; if(!p) return null;
+  const base      = p.base + (Number(addons)||0);
+  const vatParts  = Math.round(base * VAT * 100)/100;
+  const freight   = p.freightCharged;
+  const vatLanded = Math.round((vatParts + freight) * VAT * 100)/100;
+  const total     = Math.round((base + vatParts + freight + vatLanded) * 100)/100;
+  const deposit   = Math.round(total/2 * 100)/100;
+  return {base, vatParts, freight, vatLanded, total,
+          deposit, balance: Math.round((total-deposit)*100)/100};
+}
+
 function landedOf(code){
   const p = PACKAGES[code]; if(!p) return 0;
   const base = p.cogs * (1+DUTY) + p.freight;
@@ -343,9 +412,11 @@ function landedOf(code){
   // Not registered: it is a cost and stays in.
   return Math.round(VAT_REGISTERED ? base : base * (1+VAT));
 }
+/* Registered: IPB remits the VAT it charged, so it keeps base plus freight.
+   Not registered: it keeps the whole invoice and the import VAT is a cost. */
 function netRevenueOf(code){
   const p = PACKAGES[code]; if(!p) return 0;
-  return VAT_REGISTERED ? p.price/(1+VAT) : p.price;
+  return VAT_REGISTERED ? (p.base + p.freightCharged) : quoteOf(code).total;
 }
 function profitOf(code){
   if(!PACKAGES[code]) return 0;
@@ -380,12 +451,13 @@ const SALES_STAGES = [
   {id:'lost',       label:'Closed lost',      c:'#C13D28'},
   {id:'dormant',    label:'Dormant',          c:'#B9C7CB'}
 ];
+/* Signed contract terms: 50% on signature authorises procurement,
+   50% when the equipment reaches the destination, before release. */
 const PAY_STAGES = [
-  {id:'none',    label:'Nothing yet'},
-  {id:'invoiced',label:'Deposit invoiced'},
-  {id:'dep50',   label:'50% deposit in'},
-  {id:'pay75',   label:'75% in'},
-  {id:'paid',    label:'Paid in full'}
+  {id:'none',     label:'Nothing yet'},
+  {id:'invoiced', label:'Awaiting deposit'},
+  {id:'dep50',    label:'50% deposit received'},
+  {id:'paid',     label:'Paid in full'}
 ];
 const FUL_STAGES = [
   {id:'none',     label:'Not started'},
@@ -460,8 +532,7 @@ const S = {
 };
 const ROLES = {
   noah :{code:'noah',  pin:'2242', label:'Noah',  title:'Sales'},
-  ceo  :{code:'ceo',   pin:'1111', label:'Zach',  title:'CEO'},
-  snoop:{code:'snoop', pin:'7777', label:'Snoop', title:'Install'}
+  ceo  :{code:'ceo',   pin:'1111', label:'Zach',  title:'CEO'}
 };
 
 function blank(){
@@ -486,67 +557,58 @@ function seed(){
     log:[]
   },o);
 
+  // Real pipeline, handed over from WhatsApp on 18 and 24 Sept 2026.
+  // Stages and payment status need confirming lead by lead.
   d.leads = [
-    mk({name:'Levardo Blyden', phone:'12428019354', email:'Lblyden@gmail.com',
-      island:'New Providence', address:'Sea Breeze Estates', bill:350, package:'p1200',
-      salesStage:'est_sent', objective:'Cut the bill, roof mount',
-      createdAt:Date.now()-14*DAY,
-      quote:{number:'IPB-261020-1', date:'2026-09-02', total:11599, status:'sent'},
-      followUp:{active:true, step:1, startedAt:Date.now()-6*DAY, lastSentAt:Date.now()-5*DAY},
-      log:[{at:Date.now()-14*DAY,type:'note',body:'Came in through WhatsApp ad. $350 bill.',by:'Noah'},
-           {at:Date.now()-6*DAY,type:'stage',body:'Estimate sent, $11,599',by:'Noah'}]}),
-    mk({name:'Dave Macnicol', phone:'14167103040', email:'david.macnicol@macnicolasset.com',
-      island:'Eleuthera', address:'Winding Bay', bill:400, package:'p2400',
-      salesStage:'visit_req', objective:'Needs ground mount, no roof space',
-      assigned:true, createdAt:Date.now()-21*DAY,
-      quote:{number:'IPB-261021-1', date:'2026-09-02', total:16831, status:'sent'},
-      nextAction:'Confirm site visit date with Snoop', nextActionDate:new Date(Date.now()).toISOString().slice(0,10),
-      followUp:{active:false, step:0, startedAt:Date.now(), lastSentAt:null},
-      log:[{at:Date.now()-21*DAY,type:'note',body:'Referral. Winding Bay property.',by:'Noah'},
-           {at:Date.now()-3*DAY,type:'stage',body:'Asked for a site visit',by:'Noah'}]}),
-    mk({name:'Marlene Rolle', phone:'12423571188', island:'Eleuthera',
-      address:'Tarpum Bay', bill:220, package:'p1200', source:'JotForm',
-      salesStage:'contacted', objective:'Wants off grid before storm season',
-      createdAt:Date.now()-9*DAY,
-      followUp:{active:true, step:0, startedAt:Date.now()-8*DAY, lastSentAt:null},
-      log:[{at:Date.now()-9*DAY,type:'note',body:'JotForm submission from the website.',by:'System'}]}),
-    mk({name:'Kendal Stubbs', phone:'12424422901', island:'New Providence',
-      address:'Carmichael Road', bill:900, package:'p4400', source:'Messenger',
-      salesStage:'call_done', objective:'Big house, full electric, wants a real number',
-      createdAt:Date.now()-4*DAY,
-      nextAction:'Send the 4400 estimate', nextActionDate:new Date(Date.now()).toISOString().slice(0,10),
-      followUp:{active:false, step:0, startedAt:Date.now(), lastSentAt:null},
-      log:[{at:Date.now()-2*DAY,type:'call',body:'Good call. Asked about adding a third battery.',by:'Noah'}]}),
-    mk({name:'Hezekiah Gibson', phone:'12424708115', island:'Eleuthera',
-      address:'Midway Cost Cutters, Savannah Sound', bill:2400, package:'pmax',
-      propertyType:'business', salesStage:'won', payStage:'dep50', fulStage:'ordered',
-      objective:'Commercial, grocery. Custom sized.', assigned:true,
-      createdAt:Date.now()-45*DAY,
-      quote:{number:'IPB-261016-1', date:'2026-08-23', total:74017, status:'accepted'},
-      survey:{visitDate:'2026-08-30', roofType:'Flat cement', usableArea:'2100',
-        panelsFit:'60', wireRun:'150', batteryLoc:'Back store room',
-        roofBuildout:true, roofNotes:'Needs a ground array for about half the panels',
-        enclosure:true, enclosureNotes:'Battery room to be built out, roughly 8x10',
-        installQuote:'10000', verdict:'flagged',
-        recommend:'Split roof and ground array. Add a battery.',
-        comments:'Roof will not carry all 60. Ground mount the balance on the lot side.',
-        by:'Snoop', at:Date.now()-12*DAY},
-      log:[{at:Date.now()-45*DAY,type:'note',body:'Walked in through the CEO.',by:'Zach'},
-           {at:Date.now()-12*DAY,type:'survey',body:'Snoop flagged the system size',by:'Snoop'},
-           {at:Date.now()-8*DAY,type:'stage',body:'Closed won. 50% deposit received.',by:'Noah'}]}),
-    mk({name:'Andrea Ferguson', phone:'12423595544', island:'Abaco',
-      address:'Marsh Harbour', bill:500, package:'p2400',
-      salesStage:'est_sent', objective:'Comparing us against another quote',
-      createdAt:Date.now()-40*DAY,
-      quote:{number:'IPB-261009-1', date:'2026-08-05', total:15599, status:'sent'},
-      followUp:{active:true, step:3, startedAt:Date.now()-34*DAY, lastSentAt:Date.now()-20*DAY},
-      log:[{at:Date.now()-40*DAY,type:'note',body:'Very engaged, then went quiet.',by:'Noah'}]}),
-    mk({name:'Trevor Knowles', phone:'12423445120', island:'New Providence',
-      address:'Yamacraw', bill:150, package:'p1200',
-      salesStage:'lost', lostReason:'Price. Going with a generator instead.',
-      createdAt:Date.now()-30*DAY,
-      followUp:{active:false, step:0, startedAt:Date.now(), lastSentAt:null},
-      log:[{at:Date.now()-10*DAY,type:'stage',body:'Closed lost',by:'Noah'}]})
+    mk({name:'Gaven', phone:'12428248759', island:'New Providence',
+      package:'p2400', salesStage:'won', payStage:'invoiced', createdAt:Date.now()-19*DAY,
+      objective:'Email still outstanding, chase it before the invoice goes out.',
+      nextAction:'Get his email address', nextActionDate:new Date().toISOString().slice(0,10),
+      log:[{at:Date.now()-19*DAY,type:'note',body:'Passed to Zach on WhatsApp. Email still needed.',by:'Noah'}]}),
+
+    mk({name:'Will', phone:'12423592812', email:'william@youngsfinewine.com',
+      island:'New Providence', package:'p2400', salesStage:'won', payStage:'invoiced',
+      propertyType:'business', createdAt:Date.now()-19*DAY,
+      objective:'Young\'s Fine Wine.',
+      log:[{at:Date.now()-19*DAY,type:'note',body:'Passed to Zach on WhatsApp.',by:'Noah'}]}),
+
+    mk({name:'Helen', phone:'12423764577', email:'helen@erabahamas.com',
+      island:'New Providence', package:'p2400', salesStage:'won', payStage:'invoiced',
+      propertyType:'business', createdAt:Date.now()-19*DAY,
+      objective:'ERA Dupuch Real Estate. 15 Shirley Street, Nassau.',
+      address:'EE 17823, 15 Shirley Street', propertyType:'business',
+      quote:{number:'IPB-261021-1', date:'2026-09-20', total:15599.37, status:'accepted'},
+      log:[{at:Date.now()-13*DAY,type:'quote',body:'Sales contract IPB-261021-1 issued, $15,599.37. 50% deposit authorises procurement.',by:'Noah'},
+           {at:Date.now()-19*DAY,type:'note',body:'Passed to Zach on WhatsApp.',by:'Noah'}]}),
+
+    mk({name:'Shelly Taylor', phone:'12428140538', email:'rochellehanna1966@gmail.com',
+      island:'New Providence', package:'p1200', salesStage:'won', payStage:'invoiced',
+      createdAt:Date.now()-13*DAY,
+      objective:'Level 1200 system.',
+      log:[{at:Date.now()-13*DAY,type:'note',body:'Contact card passed to Zach on WhatsApp.',by:'Noah'}]}),
+
+    mk({name:'Britney Allen', phone:'12428234302', island:'New Providence',
+      address:'16 Amherstia Ave, Garden Hills #2', package:'p2400',
+      salesStage:'est_sent', createdAt:Date.now()-19*DAY,
+      objective:'Not closed yet. Still working it.',
+      followUp:{active:true, step:3, startedAt:Date.now()-19*DAY, lastSentAt:null},
+      log:[{at:Date.now()-19*DAY,type:'note',body:'Passed to Zach on WhatsApp. Has not converted yet.',by:'Noah'}]}),
+
+    mk({name:'Dave MacNicol', phone:'14167103040', email:'david.macnicol@macnicolasset.com',
+      island:'Eleuthera', address:'Winding Bay', package:'p2400',
+      salesStage:'est_sent', bill:400, createdAt:Date.now()-31*DAY,
+      objective:'Neighbour of Zak Richards in Winding Bay. Needs a ground mount, no roof space. Estimate included flat cement mounting at $1,110.',
+      quote:{number:'IPB-261021-1', date:'2026-09-02', total:16831.47, status:'sent'},
+      followUp:{active:true, step:3, startedAt:Date.now()-29*DAY, lastSentAt:null},
+      log:[{at:Date.now()-31*DAY,type:'note',body:'Came in through Zak Richards. Eight minute call, went well.',by:'Noah'},
+           {at:Date.now()-29*DAY,type:'quote',body:'Estimate sent, $16,831.47 including ground mount.',by:'Noah'}]}),
+
+    mk({name:'Darron Ellis', phone:'12423574116', island:'New Providence',
+      address:'#83 Highpoint Estates', package:'p2400',
+      salesStage:'est_sent', createdAt:Date.now()-19*DAY,
+      objective:'Quoted the 2400. Not closed yet.',
+      followUp:{active:true, step:3, startedAt:Date.now()-19*DAY, lastSentAt:null},
+      log:[{at:Date.now()-19*DAY,type:'note',body:'Passed to Zach on WhatsApp. Has not converted yet.',by:'Noah'}]})
   ];
   return d;
 }
@@ -554,6 +616,7 @@ function seed(){
 /* ---------- 5. HELPERS ---------------------------------------------------- */
 const $ = s => document.querySelector(s);
 const money = n => '$'+Math.round(Number(n)||0).toLocaleString('en-US');
+const money2 = n => '$'+(Number(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const stageOf = id => SALES_STAGES.find(s=>s.id===id) || SALES_STAGES[0];
 const pkgName = c => PACKAGES[c] ? PACKAGES[c].name : 'Not matched';
@@ -565,10 +628,7 @@ function toast(m){ S.toast=m; render(); setTimeout(()=>{S.toast=null;render();},
 function logTo(l,type,body){ l.log.unshift({at:Date.now(),type,body,by:ROLES[S.role].label}); }
 function leadById(id){ return S.data.leads.find(l=>l.id===id); }
 
-function visibleLeads(){
-  if(S.role==='snoop') return S.data.leads.filter(l=>l.assigned);
-  return S.data.leads;
-}
+function visibleLeads(){ return S.data.leads; }
 function dueList(){
   return visibleLeads().map(l=>({l,fu:dueFollowUp(l)})).filter(x=>x.fu)
     .sort((a,b)=>b.fu.overdue-a.fu.overdue);
@@ -709,19 +769,18 @@ function viewGate(){
       <select class="in" id="g-role">
         <option value="noah">Noah, sales</option>
         <option value="ceo">Zach, CEO</option>
-        <option value="snoop">Snoop, install</option>
       </select></label>
     <label class="f"><span>Passcode</span>
       <input class="in" id="g-pin" type="tel" inputmode="numeric" placeholder="4 digits"></label>
     <button class="btn" onclick="doGate()">Open pipeline</button>
     <p class="tiny mut" style="margin:14px 0 0;text-align:center">
-      Demo codes: 2242 / 1111 / 7777</p>
+      Demo codes: 2242 / 1111</p>
   </div></div>`;
 }
 window.doGate = () => {
   const r = $('#g-role').value, pin = $('#g-pin').value.trim();
   if(ROLES[r].pin !== pin){ toast('That passcode is wrong'); return; }
-  S.role = r; S.tab = r==='snoop' ? 'jobs' : 'today';
+  S.role = r; S.tab = 'today';
   try{ sessionStorage.setItem('ipb_role',r); }catch(e){}
   render();
 };
@@ -743,9 +802,7 @@ window.signOut = () => { S.role=null; try{sessionStorage.removeItem('ipb_role');
 
 function viewNav(){
   const due = dueList().length + actionList().length;
-  const tabs = S.role==='snoop'
-    ? [['jobs','To visit',icon('clip')],['jobsdone','Done',icon('list')]]
-    : [['today','Today',icon('sun')],['pipeline','Pipeline',icon('cols')],
+  const tabs = [['today','Today',icon('sun')],['pipeline','Pipeline',icon('cols')],
        ['leads','Leads',icon('list')],['money','Money',icon('chart')],
        ['more','More',icon('dots')]];
   return `<nav class="nav">${tabs.map(([id,l,ic])=>`
@@ -896,15 +953,36 @@ function viewMoney(){
   const wonProfit = sum(won,prof), openProfit = sum(open,prof);
   const step = id => all.filter(l=>reached(l.salesStage,id)).length;
 
+  // A signed deal with no deposit is not money yet. Keep the two apart.
+  const paid    = won.filter(l=>['dep50','paid'].includes(l.payStage));
+  const unpaid  = won.filter(l=>!['dep50','paid'].includes(l.payStage));
+  const cashIn  = paid.reduce((a,l)=>{
+    const q = quoteOf(l.package); if(!q) return a;
+    return a + (l.payStage==='paid' ? q.total : q.deposit);
+  },0);
+  const owed = won.reduce((a,l)=>{
+    const q = quoteOf(l.package); if(!q) return a;
+    if(l.payStage==='paid') return a;
+    return a + (l.payStage==='dep50' ? q.balance : q.total);
+  },0);
+
   let h = `<div class="wrap">
   <div class="grid2">
-    <div class="stat"><div class="n" style="color:var(--ok)">${money(wonProfit)}</div>
-      <div class="l">Profit closed, ${won.length} deal${won.length===1?'':'s'}</div></div>
+    <div class="stat"><div class="n" style="color:var(--ok)">${money(cashIn)}</div>
+      <div class="l">Cash collected, ${paid.length} of ${won.length} signed</div></div>
+    <div class="stat"><div class="n" style="color:var(--sun)">${money(owed)}</div>
+      <div class="l">Invoiced, still owed</div></div>
+    <div class="stat"><div class="n">${money(wonProfit)}</div>
+      <div class="l">Profit contracted, ${won.length} deal${won.length===1?'':'s'}</div></div>
     <div class="stat"><div class="n">${money(openProfit)}</div>
-      <div class="l">Profit in the pipeline</div></div>
-    <div class="stat"><div class="n">${money(sum(won,rev))}</div><div class="l">Revenue closed</div></div>
+      <div class="l">Profit still in the pipeline</div></div>
+    <div class="stat"><div class="n">${money(sum(won,rev))}</div><div class="l">Revenue contracted</div></div>
     <div class="stat"><div class="n">${money(sum(open,rev))}</div><div class="l">Revenue open</div></div>
   </div>
+  ${unpaid.length?`<div class="card pad" style="border-color:var(--sun);background:var(--sun-l)">
+    <strong style="font-size:14px">${unpaid.length} signed deal${unpaid.length===1?'':'s'} with no deposit in</strong>
+    <p class="tiny" style="margin:4px 0 0;color:#8A5600">Nothing is ordered and no allocation is held
+      until the 50% lands. ${esc(unpaid.map(l=>l.name).join(', '))}.</p></div>`:''}
 
   <div class="sec">Where leads fall out</div>
   <div class="card pad funnel">`;
@@ -924,9 +1002,9 @@ function viewMoney(){
 
   h += `<div class="sec">Margin by package</div><div class="card pad">`;
   PKG_LIST.forEach(p=>{
-    const cnt = all.filter(l=>l.package===p.code).length;
+    const cnt = all.filter(l=>l.package===p.code).length, q = quoteOf(p.code);
     h += `<div class="kv"><span class="k">${p.name}<br><span class="tiny mut">
-      ${money(p.price)} sell &nbsp;&middot;&nbsp; ${money(p.cogs+p.freight)} landed &nbsp;&middot;&nbsp; ${cnt} in pipeline</span></span>
+      ${money(q.total)} invoiced &nbsp;&middot;&nbsp; ${money(p.cogs+p.freight)} landed &nbsp;&middot;&nbsp; ${cnt} in pipeline</span></span>
       <span class="v">${money(profitOf(p.code))}<br><span class="tiny mut">${marginOf(p.code)}% margin</span></span></div>`;
   });
   h += `<p class="tiny mut" style="margin:11px 0 0">Profit is net of VAT both ways and assumes
@@ -1049,27 +1127,6 @@ window.sendBroadcast = id => {
   save(); render();
 };
 
-/* --- SNOOP: MY JOBS --- */
-function viewJobs(done){
-  const jobs = visibleLeads().filter(l => done ? !!l.survey : !l.survey);
-  if(!jobs.length) return `<div class="wrap"><div class="empty">
-    <h3>${done?'Nothing finished yet':'No jobs waiting'}</h3>
-    <p>${done?'Surveys you have submitted show up here.':'When Noah sends you a site, it shows up here.'}</p></div></div>`;
-  let h = `<div class="wrap"><div class="sec">${done?'Surveys you have sent in':'Sites to visit'}</div>`;
-  jobs.forEach(l=>{
-    const done = !!l.survey;
-    h += `<button class="lead" onclick="openLead('${l.id}')">
-      <div class="bar" style="background:${done?'var(--ok)':'var(--sun)'}"></div>
-      <div class="body"><div class="nm">${esc(l.name)}</div>
-        <div class="meta trunc">${esc(l.address||'')}${l.address?', ':''}${esc(l.island)}</div>
-        <div class="meta">${pkgName(l.package)}</div></div>
-      <div class="rt">${done
-        ? (l.survey.verdict==='flagged'?'<span class="tag alert">Flagged</span>':'<span class="tag ok">Done</span>')
-        : '<span class="tag sun">To visit</span>'}</div></button>`;
-  });
-  return h+'</div>';
-}
-
 /* --- ADD LEAD --- */
 window.openNew = () => { S.open='new'; render(); };
 function viewNewLead(){
@@ -1128,7 +1185,6 @@ window.closeSheet = () => { S.open=null; render(); };
 function viewLead(l){
   const p = PACKAGES[l.package];
   const fu = dueFollowUp(l);
-  const snoop = S.role==='snoop';
 
   let h = `<div class="sheet"><div class="shead">
     <button class="x" onclick="closeSheet()">&times;</button>
@@ -1141,7 +1197,7 @@ function viewLead(l){
     <div class="kv"><span class="k">WhatsApp</span><span class="v">
       ${l.phone?`<a href="${waLink(l.phone,'Hi '+(l.name||'').split(' ')[0]+',')}" target="_blank">+${esc(l.phone)}</a>`:'Not set'}</span></div>
     <div class="kv"><span class="k">Where</span><span class="v">${esc(l.address||'-')}, ${esc(l.island)}</span></div>
-    ${!snoop?`<div class="kv"><span class="k">Light bill</span><span class="v">${l.bill?money(l.bill)+' a month':'Not given'}</span></div>
+    ${true?`<div class="kv"><span class="k">Light bill</span><span class="v">${l.bill?money(l.bill)+' a month':'Not given'}</span></div>
     <div class="kv"><span class="k">Came from</span><span class="v">${esc(l.source)}, ${l.propertyType==='business'?'business':'home'}</span></div>`:''}
     ${l.email?`<div class="kv"><span class="k">Email</span><span class="v trunc">${esc(l.email)}</span></div>`:''}
     ${l.objective?`<p class="tiny" style="margin:10px 0 0;color:var(--ink2)">${esc(l.objective)}</p>`:''}
@@ -1158,14 +1214,29 @@ function viewLead(l){
       <div class="kv"><span class="k">Inverter</span><span class="v">${p.inverter}</span></div>
       <div class="kv"><span class="k">Battery</span><span class="v">${p.battery}</span></div>
       <div class="kv"><span class="k">Mount</span><span class="v">${p.mount}</span></div>
-      ${S.role==='ceo'||S.role==='noah'?`<div class="kv"><span class="k">Profit on this deal</span>
+      ${true?`<div class="kv"><span class="k">Profit on this deal</span>
         <span class="v" style="color:var(--ok)">${money(profitOf(p.code))}, ${marginOf(p.code)}%</span></div>`:''}
       <p class="tiny mut" style="margin:9px 0 0">Install quoted separately and paid direct to the
         installation company. Price includes VAT, duty and freight to your island, not delivery to the door.</p>
-    </div>` + spaceBlock(p.code, snoop?'Check this fits on site':'Space this system needs');
+    </div>
+    <div class="sec">Contract figures</div><div class="card pad">
+      ${(()=>{ const q = quoteOf(p.code); return `
+      <div class="kv"><span class="k">Solar equipment package</span><span class="v num">${money2(q.base)}</span></div>
+      <div class="kv"><span class="k">VAT on parts</span><span class="v num">${money2(q.vatParts)}</span></div>
+      <div class="kv"><span class="k">Estimated freight</span><span class="v num">${money2(q.freight)}</span></div>
+      <div class="kv"><span class="k">VAT on landed costs</span><span class="v num">${money2(q.vatLanded)}</span></div>
+      <div class="kv"><span class="k"><strong>Total sales order</strong></span>
+        <span class="v num" style="font-size:16px">${money2(q.total)}</span></div>
+      <hr class="sep">
+      <div class="kv"><span class="k">Deposit on signature, 50%<br>
+        <span class="tiny mut">Authorises procurement and holds allocation</span></span>
+        <span class="v num">${money2(q.deposit)}</span></div>
+      <div class="kv"><span class="k">Balance on arrival, 50%<br>
+        <span class="tiny mut">Cleared before release for collection</span></span>
+        <span class="v num">${money2(q.balance)}</span></div>
+      <button class="btn ghost" style="margin-top:12px" onclick="copyContract('${l.id}')">Copy the contract figures</button>`;})()}
+    </div>` + spaceBlock(p.code);
   }
-
-  if(snoop){ h += surveyBlock(l) + '</div></div>'; return h; }
 
   // stages
   h += `<div class="sec">Sales stage</div><div class="card pad"><div class="stage">
@@ -1240,12 +1311,15 @@ function viewLead(l){
       onclick="saveQuote('${l.id}')">Record the quote</button></div>`;
 
   // installer assignment + survey
-  h += `<div class="sec">Site visit</div><div class="card pad">
-    <div class="kv"><span class="k">Sent to Snoop</span>
-      <span class="v">${l.assigned?'Yes':'Not yet'}</span></div>
-    <button class="btn ${l.assigned?'dim':'ghost'}" style="margin-top:11px"
-      onclick="toggleAssign('${l.id}')">${l.assigned?'Take it back':'Send this site to Snoop'}</button></div>`;
+  h += `<div class="sec">Installer spec sheet</div><div class="card pad">
+    <p class="tiny mut" style="margin:0 0 11px">A branded one page document with the full system
+      spec, the space it needs and the scope of work. Send it to any installer for a quote, or
+      give it to the client so they can price it with their own contractor.</p>
+    <button class="btn" onclick="openSpec('${l.id}')">Open the spec sheet</button></div>`;
+
+  h += `<div class="sec">What came back from site</div>`;
   if(l.survey) h += surveyReadout(l);
+  h += surveyBlock(l);
 
   // log
   h += `<div class="sec">History</div><div class="card pad">
@@ -1277,6 +1351,20 @@ window.toggleAssign = id => { const l=leadById(id); l.assigned=!l.assigned;
   logTo(l,'note', l.assigned?'Site sent to Snoop':'Taken back from Snoop');
   if(l.assigned && l.salesStage==='visit_req') {}
   save(); render(); };
+window.copyContract = id => {
+  const l = leadById(id), q = quoteOf(l.package), p = PACKAGES[l.package];
+  if(!q){ toast('No package set'); return; }
+  const t = `${p.name} - ${l.name}\n`+
+    `Solar equipment package   ${money2(q.base)}\n`+
+    `VAT on parts              ${money2(q.vatParts)}\n`+
+    `Estimated freight         ${money2(q.freight)}\n`+
+    `VAT on landed costs       ${money2(q.vatLanded)}\n`+
+    `Total Sales Order         ${money2(q.total)}\n\n`+
+    `Deposit upon signature, 50%   ${money2(q.deposit)}\n`+
+    `Balance on arrival, 50%       ${money2(q.balance)}`;
+  navigator.clipboard ? navigator.clipboard.writeText(t).then(()=>toast('Contract figures copied'))
+    : prompt('Copy this',t);
+};
 window.copyPacket = id => {
   const l=leadById(id), p=PACKAGES[l.package];
   const t = `QUOTE REQUEST\n`+
@@ -1291,10 +1379,13 @@ window.copyPacket = id => {
     : prompt('Copy this',t);
 };
 
-/* --- SURVEY --- */
+/* --- SITE NOTES --- */
+/* What came back from whichever installer looked at the site. */
 function surveyBlock(l){
   const s = l.survey || {};
-  return `<div class="sec">Site survey</div><div class="card pad">
+  return `<div class="card pad">
+    <label class="f"><span>Which installer looked at it</span>
+      <input class="in" id="s-who" value="${esc(s.installer||'')}" placeholder="Snoop, or whoever the client used"></label>
     <div class="two">
       <label class="f"><span>Visit date</span><input class="in" type="date" id="s-date" value="${esc(s.visitDate||'')}"></label>
       <label class="f"><span>Roof type</span><select class="in" id="s-roof">
@@ -1319,18 +1410,18 @@ function surveyBlock(l){
       <option value="yes" ${s.enclosure?'selected':''}>Yes</option></select></label>
     <label class="f"><span>Notes on that</span><textarea class="in" id="s-encn">${esc(s.enclosureNotes||'')}</textarea></label>
     <hr class="sep">
-    <label class="f"><span>Your install quote</span>
-      <input class="in" type="number" id="s-quote" value="${esc(s.installQuote||'')}" placeholder="Dollars"></label>
+    <label class="f"><span>Their install quote</span>
+      <input class="in" type="number" id="s-quote" value="${esc(s.installQuote||'')}" placeholder="Dollars, paid direct to them"></label>
     <label class="f"><span>Does the system size work</span>
       <select class="in" id="s-verdict">
         <option value="confirmed" ${s.verdict==='confirmed'?'selected':''}>Yes, it works as specified</option>
         <option value="flagged" ${s.verdict==='flagged'?'selected':''}>No, there is a problem</option>
       </select></label>
-    <label class="f"><span>If there is a problem, what would you do instead</span>
+    <label class="f"><span>What they would do instead</span>
       <textarea class="in" id="s-rec">${esc(s.recommend||'')}</textarea></label>
-    <label class="f"><span>Anything else Noah should know</span>
+    <label class="f"><span>Anything else worth recording</span>
       <textarea class="in" id="s-com">${esc(s.comments||'')}</textarea></label>
-    <button class="btn" onclick="saveSurvey('${l.id}')">Submit the survey</button>
+    <button class="btn" onclick="saveSurvey('${l.id}')">Save site findings</button>
   </div>`;
 }
 window.saveSurvey = id => {
@@ -1343,11 +1434,12 @@ window.saveSurvey = id => {
     enclosure:$('#s-enc').value==='yes', enclosureNotes:$('#s-encn').value,
     installQuote:$('#s-quote').value, verdict:$('#s-verdict').value,
     recommend:$('#s-rec').value, comments:$('#s-com').value,
+    installer:$('#s-who').value,
     by:ROLES[S.role].label, at:Date.now()
   };
-  logTo(l,'survey','Site survey submitted. System size '+
-    (l.survey.verdict==='flagged'?'FLAGGED':'confirmed')+'.');
-  save(); toast('Survey submitted'); render();
+  logTo(l,'survey','Site findings recorded from '+(l.survey.installer||'the installer')+
+    '. System size '+(l.survey.verdict==='flagged'?'FLAGGED':'confirmed')+'.');
+  save(); toast('Site findings saved'); render();
 };
 function surveyReadout(l){
   const s = l.survey;
@@ -1371,6 +1463,123 @@ function surveyReadout(l){
   </div>`;
 }
 
+/* ---------- SPEC SHEET -----------------------------------------------------
+   One page, branded, printable to PDF. Everything an installer needs to quote
+   the job without seeing the pipeline. Works on a phone: Share, then Print,
+   then Save to Files.                                                        */
+window.openSpec = id => { S.spec = id; S.open = null; S.tab = 'spec'; window.scrollTo(0,0); render(); };
+
+function viewSpecSheet(){
+  const l = leadById(S.spec);
+  if(!l) return `<div class="wrap"><div class="empty"><h3>Nothing selected</h3></div></div>`;
+  const p = PACKAGES[l.package], sp = p ? spaceFor(p.code) : null;
+  const H = HARDWARE;
+  const ref = 'IPB-SPEC-' + l.id.slice(1,6).toUpperCase();
+  const dt = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const pr = n => n==null?'-':n;
+
+  return `<div class="printbar">
+      <button class="btn dim" onclick="go('leads')">Back</button>
+      <button class="btn" onclick="window.print()">Save as PDF</button>
+      <span class="tiny" style="color:#fff;opacity:.75">Phone: Share, then Print, then Save to Files</span>
+    </div>
+  <div class="doc">
+    <div class="goldbar"></div>
+    <div class="dhead">
+      <div class="brand">
+        <div class="nm">INDEPENDENT<br><b>POWER</b></div>
+        <div class="sub">B A H A M A S</div>
+        <div class="tagline">SOLAR &nbsp;&bull;&nbsp; ELECTRICAL &nbsp;&bull;&nbsp; ENERGY STORAGE</div>
+      </div>
+      <div class="dref">
+        <h3>Installation Spec Sheet</h3>
+        <div class="r">${ref}</div>
+        <div class="d">${dt}</div>
+        <div class="d">${p?p.name:'System to be confirmed'}</div>
+      </div>
+    </div>
+
+    <div class="band">CLIENT AND SITE</div>
+    <div class="dbody">
+      <div class="pair"><div class="pk">Client</div><div class="pv">${esc(l.name)}</div></div>
+      <div class="pair"><div class="pk">Contact</div><div class="pv">${l.phone?'+'+esc(l.phone):'To be confirmed'}${l.email?' &nbsp;&bull;&nbsp; '+esc(l.email):''}</div></div>
+      <div class="pair"><div class="pk">Site address</div><div class="pv">${esc(l.address||'To be confirmed')}</div></div>
+      <div class="pair"><div class="pk">Island</div><div class="pv">${esc(l.island)}</div></div>
+      <div class="pair"><div class="pk">Property</div><div class="pv">${l.propertyType==='business'?'Business':'Residential'}</div></div>
+      <div class="pair"><div class="pk">Mounting</div><div class="pv">${l.survey&&l.survey.roofType?esc(l.survey.roofType):'Roof mount unless site says otherwise'}</div></div>
+    </div>
+
+    <div class="band">EQUIPMENT SUPPLIED BY INDEPENDENT POWER BAHAMAS</div>
+    <div class="dbody">
+      ${p?`<table>
+        <tr><th>Item</th><th>Specification</th><th style="text-align:right">Qty</th></tr>
+        <tr><td>Solar panels</td><td>${H.panel.name}, ${H.panel.w} x ${H.panel.h} x ${H.panel.d} in, ${H.panel.lb} lb each</td><td class="n">${p.panelQty}</td></tr>
+        <tr><td>Inverter</td><td>${esc(sp.invName)}, ${esc(sp.invEach)}</td><td class="n">${p.invQty}</td></tr>
+        <tr><td>Battery</td><td>${H.battery.name}, ${H.battery.w} x ${H.battery.d} x ${H.battery.h} in, ${H.battery.lb} lb each</td><td class="n">${p.batteryQty}</td></tr>
+        <tr><td>Mounting</td><td>${esc(p.mount)}</td><td class="n">1 set</td></tr>
+        <tr><td>PV cable</td><td>4mm&sup2; PV cable, ${esc(p.wire)}</td><td class="n">1</td></tr>
+        <tr><td>Combiner box</td><td>${esc(p.combiner)}, DC 500V</td><td class="n">${p.invQty}</td></tr>
+      </table>
+      <div class="callout"><strong>System output.</strong> ${p.kwh.toLocaleString()} kWh a month.
+        Battery storage ${(p.batteryQty*16.08).toFixed(1)} kWh. Split phase 120/240V.
+        The inverter draws from the grid automatically when solar and battery run low.</div>`
+      :'<p>System not yet matched. Confirm with Independent Power Bahamas before quoting.</p>'}
+    </div>
+
+    ${sp?`<div class="band">SPACE AND STRUCTURAL REQUIREMENTS</div>
+    <div class="dbody">
+      <div class="pair"><div class="pk">Panel array area</div><div class="pv">${sp.arraySqft} sq ft of clear, unshaded roof or ground</div></div>
+      <div class="pair"><div class="pk">Battery bank</div><div class="pv">${sp.bankW} x ${sp.bankD} x ${sp.bankH} in &nbsp;(${sp.batteryQty} unit${sp.batteryQty>1?'s':''}${sp.stacks>1?' in '+sp.stacks+' stacks':''})</div></div>
+      <div class="pair"><div class="pk">Battery floor space</div><div class="pv">${sp.bankFloorSqft} sq ft including 30 in service access</div></div>
+      <div class="pair"><div class="pk">Inverter wall space</div><div class="pv">${sp.wallW} x ${sp.wallH} in clear, 12 in all round for airflow</div></div>
+      <div class="pair"><div class="pk">Total equipment area</div><div class="pv">${sp.roomSqft} sq ft</div></div>
+      <div class="pair"><div class="pk">Equipment weight</div><div class="pv">${sp.weight.toLocaleString()} lb total, panels ${H.panel.lb} lb each, batteries ${H.battery.lb} lb each</div></div>
+      <div class="callout"><strong>Structure.</strong> Batteries stack a maximum of three high and
+        must sit on a level, dry, ventilated surface rated for the weight above. Confirm the roof
+        structure carries the array before mounting. Batteries are IP21 and are not rated for
+        exposed outdoor mounting.</div>
+    </div>`:''}
+
+    <div class="band">SCOPE OF WORK TO BE QUOTED</div>
+    <div class="dbody">
+      <div class="pair"><div class="pk">1</div><div class="pv">Collect equipment from the drop point and deliver to site. Equipment is heavy, a truck with a fork lift is recommended.</div></div>
+      <div class="pair"><div class="pk">2</div><div class="pv">Install the mounting system and set the panel array.</div></div>
+      <div class="pair"><div class="pk">3</div><div class="pv">Mount and connect the inverter and battery bank.</div></div>
+      <div class="pair"><div class="pk">4</div><div class="pv">Run PV cable, combiner box, grounding, conduit and load wire to the house panel.</div></div>
+      <div class="pair"><div class="pk">5</div><div class="pv">Fit disconnect sub panels for grid in and house out.</div></div>
+      <div class="pair"><div class="pk">6</div><div class="pv">Commission the system, test and hand over to the client.</div></div>
+      <div class="pair"><div class="pk">Price separately</div><div class="pv">Any roof structure build out, ground mount array, battery enclosure or room, trenching, and electrical materials not listed above.</div></div>
+      ${l.objective?`<div class="callout"><strong>Client notes.</strong> ${esc(l.objective)}</div>`:''}
+      ${l.survey&&l.survey.comments?`<div class="callout"><strong>From the site visit.</strong> ${esc(l.survey.comments)}${l.survey.recommend?' '+esc(l.survey.recommend):''}</div>`:''}
+    </div>
+
+    <div class="band">INSTALLER QUOTE</div>
+    <div class="dbody">
+      <p style="margin:0 0 2px;font-size:12px">To be completed by the installing contractor. Installation
+      is contracted and paid directly between the client and the installer. Independent Power Bahamas
+      supplies the equipment only.</p>
+      <div class="sign">
+        <div class="line"><span>INSTALLER / COMPANY</span></div>
+        <div class="line"><span>LABOUR AND MATERIALS QUOTED</span></div>
+        <div class="line"><span>ADDITIONAL BUILD OUT, IF ANY</span></div>
+        <div class="line"><span>ESTIMATED START DATE AND DURATION</span></div>
+        <div class="line"><span>SIGNATURE AND DATE</span></div>
+      </div>
+      <p class="fine">Figures in this document describe the equipment supplied and the space it
+      requires. They are not a quotation for installation. Site conditions, structure, roof
+      condition, access and existing electrical systems must be verified on site before pricing.
+      Hidden damage, defective wiring, corrosion, structural deficiencies and other concealed
+      conditions may require a revised price. Any energy production, savings or battery runtime
+      figures are estimates based on stated assumptions and are not guaranteed.</p>
+    </div>
+
+    <div class="dfoot">
+      <span>Independent Power Bahamas &nbsp;&bull;&nbsp; powerbahamas.com</span>
+      <span>${ref}</span>
+    </div>
+  </div>`;
+}
+
 /* ---------- 8. RENDER ----------------------------------------------------- */
 function render(){
   const app = $('#app');
@@ -1380,8 +1589,7 @@ function render(){
   else if(S.open){ const l = leadById(S.open); body = l ? viewLead(l) : ''; if(!l) S.open=null; }
   else {
     const v = {today:viewToday, pipeline:viewPipeline, leads:viewLeads, money:viewMoney,
-      more:viewMore, jobs:viewJobs, jobsdone:()=>viewJobs(true),
-      broadcast:viewBroadcast}[S.tab] || viewToday;
+      more:viewMore, broadcast:viewBroadcast, spec:viewSpecSheet}[S.tab] || viewToday;
     body = v();
   }
   app.innerHTML = viewTop() + body + viewNav() +
@@ -1393,7 +1601,7 @@ function render(){
   const loaded = await Store.load();
   S.data = loaded && loaded.leads ? loaded : seed();
   if(!S.data.settings) S.data.settings = {shipmentMonth:'',lastBroadcast:null};
-  try{ const r = sessionStorage.getItem('ipb_role'); if(r && ROLES[r]) { S.role=r; S.tab = r==='snoop'?'jobs':'today'; } }catch(e){}
+  try{ const r = sessionStorage.getItem('ipb_role'); if(r && ROLES[r]) { S.role=r; S.tab='today'; } }catch(e){}
   if(!loaded) save();
   render();
 })();

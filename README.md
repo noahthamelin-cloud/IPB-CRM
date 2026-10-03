@@ -24,13 +24,15 @@ One dependency (`@netlify/blobs`).
 | What | Where |
 |---|---|
 | Passcodes | `ROLES` block, `public/index.html` |
+| Installer spec sheet wording | `viewSpecSheet()` and the `.doc` CSS block |
+| Real customer data | `seed()` block |
 | Package prices, costs, freight, specs | `PACKAGES` block, `public/index.html` |
 | VAT, duty, VAT registration | `VAT`, `DUTY`, `VAT_REGISTERED` constants |
 | Hardware sizes and clearances | `HARDWARE` and `CLEAR` blocks |
 | Follow-up messages and timing | `SEQUENCE` and `QUARTERLY` blocks |
 | Shipment broadcast wording | `BROADCAST` constant |
 | Sales, payment, fulfilment stages | `SALES_STAGES`, `PAY_STAGES`, `FUL_STAGES` |
-| JotForm field matching | `MAP` block, `netlify/functions/jotform-intake.js` |
+| JotForm field matching (both forms) | `MAP` block, `netlify/functions/jotform-intake.js` |
 
 ## Known limits in v1
 
